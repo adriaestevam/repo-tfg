@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_v1/Presentation/lib/pages/initial_configuration/choose_university.dart';
 import 'package:tfg_v1/Presentation/lib/utilities/app_colors.dart';
 import 'login_page.dart';
-import 'package:login_signup_v2/pages/initial_configuration/choose_university.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_v1/Presentation/lib/utilities/app_colors.dart';
-import 'package:tfg_v1/Presentation/lib/utilities/app_colors.dart';
 import 'signup_page.dart';
 
 class LoginPage extends StatefulWidget {

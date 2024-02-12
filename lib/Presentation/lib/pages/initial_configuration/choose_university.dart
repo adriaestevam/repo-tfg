@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:login_signup_v2/utilities/app_colors.dart';
+import 'package:tfg_v1/Presentation/lib/utilities/app_colors.dart';
 import 'choose_subjects.dart';
 
 class UniversitySearchPage extends StatefulWidget {

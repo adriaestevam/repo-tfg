@@ -1,4 +1,4 @@
-import 'package:login_signup_v2/classes/event.dart';
+import 'package:tfg_v1/Presentation/lib/classes/event.dart';
 
 class EventsRepository {
   List<Event> events = [];

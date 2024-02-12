@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:login_signup_v2/pages/home_page.dart';
-import 'package:login_signup_v2/utilities/app_colors.dart';
+import 'package:tfg_v1/Presentation/lib/pages/home_page.dart';
+import 'package:tfg_v1/Presentation/lib/utilities/app_colors.dart';
+
 
 class ChooseObjectivePage extends StatefulWidget {
   final List<String> subjects;

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:login_signup_v2/pages/home_page.dart';
-import 'package:login_signup_v2/pages/notification_page.dart';
-import 'package:login_signup_v2/pages/objectives_page.dart';
+import 'package:tfg_v1/Presentation/lib/pages/home_page.dart';
+import 'package:tfg_v1/Presentation/lib/pages/notification_page.dart';
+import 'package:tfg_v1/Presentation/lib/pages/objectives_page.dart';
 import 'package:tfg_v1/Presentation/lib/utilities/app_colors.dart';
-import 'package:login_signup_v2/widgets/bottom_navigation_widget.dart';
+import 'package:tfg_v1/Presentation/lib/widgets/bottom_navigation_widget.dart';
 
 class SubjectPage extends StatelessWidget {
   const SubjectPage({super.key});

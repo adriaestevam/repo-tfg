@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:login_signup_v2/classes/event.dart';
-import 'package:login_signup_v2/classes/events_repository.dart';
-import 'package:login_signup_v2/pages/notification_page.dart';
-import 'package:login_signup_v2/pages/objectives_page.dart';
-import 'package:login_signup_v2/pages/subjects_page.dart';
+import 'package:tfg_v1/Presentation/lib/classes/event.dart';
+import 'package:tfg_v1/Presentation/lib/classes/events_repository.dart';
+import 'package:tfg_v1/Presentation/lib/pages/notification_page.dart';
+import 'package:tfg_v1/Presentation/lib/pages/objectives_page.dart';
+import 'package:tfg_v1/Presentation/lib/pages/subjects_page.dart';
 import 'package:tfg_v1/Presentation/lib/utilities/app_colors.dart';
-import 'package:login_signup_v2/widgets/bottom_navigation_widget.dart';
-import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart' show CalendarCarousel;
+import 'package:tfg_v1/Presentation/lib/widgets/bottom_navigation_widget.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);

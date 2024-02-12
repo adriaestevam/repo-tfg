@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:login_signup_v2/pages/initial_configuration/choose_priorities.dart';
-import 'package:login_signup_v2/utilities/app_colors.dart';
+import 'package:tfg_v1/Presentation/lib/pages/initial_configuration/choose_priorities.dart';
+import 'package:tfg_v1/Presentation/lib/utilities/app_colors.dart';
 
 class ChooseSubjectsPage extends StatefulWidget {
   final String university;
