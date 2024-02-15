@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:tfg_v1/Presentation/lib/utilities/app_colors.dart';
-import 'signup_page.dart';
+import 'package:tfg_v1/UI/Utilities/app_colors.dart';
+import 'package:tfg_v1/UI/Views/LoginSignup/SignupView.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

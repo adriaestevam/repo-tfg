@@ -1,74 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:postgres/postgres.dart';
-
-void main() async {
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tfg_v1/Domain/SignUpBloc/sing_up_bloc.dart';
+import 'package:tfg_v1/UI/Views/LoginSignup/SignupView.dart';
+void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter PostgreSQL Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: MyHomePage(),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-
-
-  @override
-  void initState() {
-    super.initState();
-    connectToDatabase();
-  }
-
-  void connectToDatabase() async {
-    try {
-      final conn = await Connection.open(Endpoint(
-        host: 'localhost',
-        port: 5433,
-        database: 'app',
-        username: 'administrador',
-        password: 'administrador',
-      )
-    );
-
-    
-
-      print('Database Connected!');
-
-      // Add the user 'adria' to the database
-      
-    } catch (e) {
-      print('Error connecting to database: $e');
-    }
-  }
-
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Flutter PostgreSQL Demo'),
-      ),
-      body: Center(
-        child: Text(
-          'Check console for database connection status!',
-          style: TextStyle(fontSize: 20.0),
+    return BlocProvider(
+      create: (context) => SignUpBloc(),
+      child: MaterialApp(
+        title: 'Your App Title',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          // Add any other theme configurations here
         ),
+        home: SignUpScreen(), // Replace with the actual widget for your sign-up view
       ),
     );
   }
-
- 
 }
