@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:provider/provider.dart'; 
-import 'package:tfg_v1/Presentation/lib/utilities/bottom_nav_bar_state.dart';
-import 'package:tfg_v1/Presentation/lib/utilities/app_colors.dart';
+import 'package:provider/provider.dart';
+import 'package:tfg_v1/UI/Utilities/app_colors.dart';
+import 'package:tfg_v1/UI/Utilities/bottom_nav_bar_state.dart'; 
 
 class CustomBottomNav extends StatelessWidget {
   final Function(int) onTabTapped; // Callback function for navigation

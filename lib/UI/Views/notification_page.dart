@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:tfg_v1/Presentation/lib/pages/home_page.dart';
-import 'package:tfg_v1/Presentation/lib/pages/objectives_page.dart';
-import 'package:tfg_v1/Presentation/lib/pages/subjects_page.dart';
-import 'package:tfg_v1/Presentation/lib/utilities/app_colors.dart';
-import 'package:tfg_v1/Presentation/lib/widgets/bottom_navigation_widget.dart';
+import 'package:tfg_v1/UI/Utilities/app_colors.dart';
+import 'package:tfg_v1/UI/Views/home_page.dart';
+import 'package:tfg_v1/UI/Views/objectives_page.dart';
+import 'package:tfg_v1/UI/Views/subjects_page.dart';
+import 'package:tfg_v1/UI/Widgets/bottom_navigation_widget.dart';
 
 class NotificationPage extends StatefulWidget {
   const NotificationPage({super.key});
@@ -35,7 +35,6 @@ class _NotificationPageState extends State<NotificationPage> {
         onTabTapped: (index) {
           switch(index){
             case 0:
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
               break;
             case 1:
               Navigator.push(context, MaterialPageRoute(builder: (context) => const ObjectivesPage()));
@@ -136,9 +135,4 @@ class _NotificationPageState extends State<NotificationPage> {
   }
 }
 
-class Event {
-  final String name;
-  final IconData icon;
 
-  Event(this.name, this.icon);
-}

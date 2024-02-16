@@ -14,3 +14,5 @@ class SignUpFailure extends SignUpState {
 
   SignUpFailure({required this.error});
 }
+
+class SwipeToLoginState extends SignUpState {}

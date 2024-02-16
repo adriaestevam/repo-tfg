@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:tfg_v1/Presentation/lib/pages/home_page.dart';
-import 'package:tfg_v1/Presentation/lib/pages/notification_page.dart';
-import 'package:tfg_v1/Presentation/lib/pages/subjects_page.dart';
-import 'package:tfg_v1/Presentation/lib/utilities/app_colors.dart';
-import 'package:tfg_v1/Presentation/lib/widgets/bottom_navigation_widget.dart';
+import 'package:tfg_v1/UI/Utilities/app_colors.dart';
+import 'package:tfg_v1/UI/Views/notification_page.dart';
+import 'package:tfg_v1/UI/Views/subjects_page.dart';
+import 'package:tfg_v1/UI/Widgets/bottom_navigation_widget.dart';
 
 class ObjectivesPage extends StatelessWidget {
   const ObjectivesPage({super.key});
@@ -35,7 +34,6 @@ class ObjectivesPage extends StatelessWidget {
         onTabTapped: (index) {
           switch(index){
             case 0:
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
               break;
             case 1:
               Navigator.push(context, MaterialPageRoute(builder: (context) => const ObjectivesPage()));

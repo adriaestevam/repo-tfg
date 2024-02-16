@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
+import 'package:tfg_v1/Domain/NavigatorBloc/navigator_state.dart';
 import 'package:tfg_v1/Domain/SignUpBloc/sing_up_bloc.dart';
+import 'package:tfg_v1/UI/Utilities/AppTheme.dart';
+import 'package:tfg_v1/UI/Utilities/Routes.dart';
+import 'package:tfg_v1/UI/Views/LoginSignup/LoginView.dart';
 import 'package:tfg_v1/UI/Views/LoginSignup/SignupView.dart';
-
 import 'Data/AuthRepository.dart';
 void main() {
   runApp(MyApp());
@@ -25,17 +29,29 @@ class MyApp extends StatelessWidget {
               authRepository: RepositoryProvider.of<AuthRepository>(context),
             ),
           ),
+          BlocProvider<NavigatorBloc>(
+            create: (context) => NavigatorBloc(),
+          ),
           // Agrega más BlocProviders si es necesario
         ],
         child: MaterialApp(
           title: 'Your App Title',
-          theme: ThemeData(
-            primarySwatch: Colors.blue,
-            // Add any other theme configurations here
+          theme: AppTheme.getAppTheme(),
+          home: BlocBuilder<NavigatorBloc, NaviState>(
+            builder: (context, state) {
+              if (state is LoginState) {
+                return LoginPage();
+              } else if (state is SignupState) {
+                return SignUpScreen();
+              }
+              return SignUpScreen(); // Manejo de estado no definido
+            },
           ),
-          home: SignUpScreen(), // Replace with the actual widget for your sign-up view
+          routes: Routes.routes,
         ),
       ),
     );
   }
 }
+
+

@@ -29,6 +29,8 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
         try {
           await authRepository.registerUser(event.email, event.password);
           emit(SignUpSuccess());
+          await Future.delayed(Duration(seconds: 2));
+          emit(SwipeToLoginState()); ////?¿?¿?¿
         } catch (error) {
           emit(SignUpFailure(error: "User registration failed: $error"));
         }

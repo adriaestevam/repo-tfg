@@ -1,35 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tfg_v1/Domain/NavigatorBloc/navigator_event.dart';
 import 'package:tfg_v1/UI/Utilities/app_colors.dart';
 import 'package:tfg_v1/UI/Views/LoginSignup/SignupView.dart';
+import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
 
-
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
-
-  @override
-  _LoginPageState createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
+class LoginPage extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
+    final NavigatorBloc navigatorBloc = BlocProvider.of<NavigatorBloc>(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login Page'),
-        backgroundColor: AppColors.primary, 
+        title: Text('Login Page'),
+        backgroundColor: AppColors.primary,
       ),
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              AppColors.secondary, 
-              AppColors.accent, 
-            ],
+            colors: [AppColors.secondary, AppColors.accent],
           ),
         ),
         child: Center(
@@ -43,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
                   style: TextStyle(
                     fontSize: 24.0,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.text, 
+                    color: AppColors.text,
                   ),
                 ),
                 const SizedBox(height: 8.0),
@@ -51,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
                   'Good to see you',
                   style: TextStyle(
                     fontSize: 16.0,
-                    color: AppColors.text, 
+                    color: AppColors.text,
                   ),
                 ),
                 const SizedBox(height: 20.0),
@@ -70,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
                           border: InputBorder.none,
                         ),
                       ),
-                      const Divider(color: AppColors.text), 
+                      const Divider(color: AppColors.text),
                       TextField(
                         controller: _passwordController,
                         decoration: const InputDecoration(
@@ -88,7 +82,7 @@ class _LoginPageState extends State<LoginPage> {
                     // Implement login functionality here
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary, 
+                    backgroundColor: AppColors.primary,
                     padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -105,15 +99,12 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 12.0),
                 TextButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const SignUpPage()),
-                    );
+                    navigatorBloc.add(SignUpEvent());
                   },
                   child: const Text(
                     'Don\'t have an account? Sign up here.',
                     style: TextStyle(
-                      color: AppColors.text, 
+                      color: AppColors.text,
                     ),
                   ),
                 ),

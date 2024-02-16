@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
+import 'package:tfg_v1/Domain/NavigatorBloc/navigator_event.dart';
 import 'package:tfg_v1/Domain/SignUpBloc/sing_up_event.dart';
 import 'package:tfg_v1/Domain/SignUpBloc/sing_up_state.dart';
 import '../../../Domain/SignUpBloc/sing_up_bloc.dart';
@@ -24,6 +26,7 @@ class SignUpForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SignUpBloc signUpBloc = BlocProvider.of<SignUpBloc>(context);
+    final NavigatorBloc navigatorBloc= BlocProvider.of<NavigatorBloc>(context);
 
     return BlocBuilder<SignUpBloc, SignUpState>(
       builder: (context, state) {
@@ -59,6 +62,15 @@ class SignUpForm extends StatelessWidget {
                 child: Text('Sign Up'),
               ),
               SizedBox(height: 20.0),
+              ElevatedButton(
+                onPressed: () {
+                  navigatorBloc.add(
+                    LoginEvent(),
+                  );
+                },
+                child: Text('Log in'),
+              ),
+              SizedBox(height: 20.0),
               if (state is SignUpLoading) // Show loading indicator
                 CircularProgressIndicator(),
               if (state is SignUpSuccess) // Show success message
@@ -66,7 +78,9 @@ class SignUpForm extends StatelessWidget {
               if (state is SignUpFailure) // Show failure message
                 FailureMessage(message: 'Sign Up Failed: ${state.error}'),
             ],
+
           ),
+          
         );
       },
     );
