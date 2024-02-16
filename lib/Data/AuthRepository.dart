@@ -1,20 +1,38 @@
-class UserRepository {
-  // Aquí podrías tener una instancia de tu base de datos o cualquier otro método de almacenamiento de usuarios
+import 'package:meta/meta.dart';
 
-  Future<bool> checkEmailAvailability(String email) async {
-    // Aquí podrías realizar la lógica para verificar la disponibilidad del correo electrónico en tu base de datos
-    // Por ejemplo, consultando si el correo ya está registrado
-
-    // Supongamos que aquí tienes una implementación básica que devuelve true si el correo está disponible y false si ya está registrado
-    return true;
+class AuthRepository {
+  Future<void> lookForEmail(String email) async {
+    // Simular la búsqueda de correo electrónico
+    // Aquí puedes agregar la lógica de simulación necesaria
+    await Future.delayed(Duration(seconds: 1));
+    return emailNotFound();
   }
 
-  Future<void> signUp(String email, String password, String name) async {
-    // Aquí podrías realizar la lógica para registrar un nuevo usuario en tu base de datos
-    // Por ejemplo, guardar el usuario en una colección de usuarios
+  Future<void> registerUser(String email, String password) async {
+    // Simular el registro de usuario
+    // Aquí puedes agregar la lógica de simulación necesaria
+    await Future.delayed(Duration(seconds: 1));
+    return userRegisteredSuccessfully();
+  }
 
-    // Supongamos que aquí tienes una implementación básica que simula el registro de un usuario
-    await Future.delayed(Duration(seconds: 2)); // Simulamos una demora de 2 segundos
-    print('Usuario registrado: $email - $name');
+  // Respuestas
+  Future<void> emailNotFound() async {
+    // Devuelve un resultado cuando el correo electrónico no se encuentra
+    print('Email not found');
+  }
+
+  Future<void> emailFound() async {
+    // Devuelve un resultado cuando el correo electrónico se encuentra
+    print('Email found');
+  }
+
+  Future<void> userRegisteredSuccessfully() async {
+    // Devuelve un resultado cuando el usuario se registra con éxito
+    print('User registered successfully');
+  }
+
+  Future<void> userRegistrationError() async {
+    // Devuelve un resultado cuando ocurre un error durante el registro del usuario
+    print('User registration error');
   }
 }
