@@ -9,7 +9,7 @@ class Routes {
   static const String signup ='/signup';
 
   static final Map<String, WidgetBuilder> routes = {
-    login: (context) => LoginPage(),
+    login: (context) => LoginScreen(),
     signup: (context) => SignUpScreen()
   };
 }

@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   static ThemeData getAppTheme() {
-    final Color primaryColor = Color(0xFF6200EE); // Deep Purple
-    final Color secondaryColor = Color(0xFFFF4081); // Pink
+    final Color primaryColor = Color.fromARGB(255, 4, 112, 98); 
+    final Color accentColor = Color.fromARGB(255, 128, 168, 151); 
 
     return ThemeData(
       primaryColor: primaryColor,
-      secondaryHeaderColor: secondaryColor,
-      scaffoldBackgroundColor: Colors.white,
-      fontFamily: 'Montserrat', // Elegant font family
+      scaffoldBackgroundColor: Color(0xFFF5F5F5), // Gris claro
+      fontFamily: 'Montserrat', // Fuente elegante
       textTheme: TextTheme(
         headline1: TextStyle(
           fontSize: 24,
@@ -32,7 +31,7 @@ class AppTheme {
       ),
       appBarTheme: AppBarTheme(
         color: Colors.white,
-        elevation: 0, // No shadow
+        elevation: 0, // Sin sombra
         centerTitle: true,
         iconTheme: IconThemeData(
           color: Colors.black87,
@@ -40,7 +39,7 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          primary: primaryColor, // Deep Purple
+          primary: primaryColor, // Marrón
           onPrimary: Colors.white,
           padding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
           textStyle: TextStyle(
@@ -54,13 +53,13 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          primary: primaryColor, // Deep Purple
+          primary: primaryColor, 
           textStyle: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
-      ),
+      ), colorScheme: ColorScheme.fromSwatch().copyWith(secondary: accentColor),
     );
   }
 }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
+import 'package:tfg_v1/Domain/NavigatorBloc/navigator_event.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_state.dart';
 import 'package:tfg_v1/Domain/SignUpBloc/sing_up_bloc.dart';
 import 'package:tfg_v1/UI/Utilities/AppTheme.dart';
 import 'package:tfg_v1/UI/Utilities/Routes.dart';
+import 'package:tfg_v1/UI/Views/Initial%20Configuration/initial_configuration.dart';
 import 'package:tfg_v1/UI/Views/LoginSignup/LoginView.dart';
 import 'package:tfg_v1/UI/Views/LoginSignup/SignupView.dart';
 import 'Data/AuthRepository.dart';
@@ -40,9 +42,11 @@ class MyApp extends StatelessWidget {
           home: BlocBuilder<NavigatorBloc, NaviState>(
             builder: (context, state) {
               if (state is LoginState) {
-                return LoginPage();
+                return LoginScreen();
               } else if (state is SignupState) {
                 return SignUpScreen();
+              } else if (state is StartInitialConfigutationState){
+                return InitialConfigurationScreen();
               }
               return SignUpScreen(); // Manejo de estado no definido
             },
@@ -53,5 +57,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 

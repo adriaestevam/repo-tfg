@@ -18,5 +18,12 @@ class NavigatorBloc extends Bloc<NavigatorEvent, NaviState> {
         print("Error: $error");
       }
     });
+    on<StartInitialConfigutationEvent>((event, emit) async {
+      try {
+        emit(StartInitialConfigutationState());
+      } catch (error) {
+        print("Error: $error");
+      }
+    });
   }
 }

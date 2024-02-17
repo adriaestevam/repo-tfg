@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tfg_v1/Domain/NavigatorBloc/navigator_event.dart';
-import 'package:tfg_v1/UI/Utilities/app_colors.dart';
-import 'package:tfg_v1/UI/Views/LoginSignup/SignupView.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
+import 'package:tfg_v1/Domain/NavigatorBloc/navigator_event.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginScreen extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -14,100 +12,86 @@ class LoginPage extends StatelessWidget {
     final NavigatorBloc navigatorBloc = BlocProvider.of<NavigatorBloc>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Login Page'),
-        backgroundColor: AppColors.primary,
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.secondary, AppColors.accent],
-          ),
-        ),
-        child: Center(
+      backgroundColor: Colors.white, // Fondo blanco como en SignUpScreen
+      body: Center(
+        child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.symmetric(horizontal: 40),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                const Text(
-                  'Hello',
+              children: [
+                Text(
+                  'Welcome Back',
                   style: TextStyle(
-                    fontSize: 24.0,
+                    color: Colors.blue.shade800, // El mismo azul que SignUpScreen
+                    fontSize: 30,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.text,
                   ),
                 ),
-                const SizedBox(height: 8.0),
-                const Text(
-                  'Good to see you',
-                  style: TextStyle(
-                    fontSize: 16.0,
-                    color: AppColors.text,
+                SizedBox(height: 20),
+                // Campo de Email
+                TextField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    hintText: 'Your Email',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25.0),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.blue.shade50, // El mismo color de fondo que SignUpScreen
                   ),
+                  keyboardType: TextInputType.emailAddress,
                 ),
-                const SizedBox(height: 20.0),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
+                SizedBox(height: 20),
+                // Campo de Password
+                TextField(
+                  controller: _passwordController,
+                  decoration: InputDecoration(
+                    hintText: 'Password',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25.0),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.blue.shade50, // El mismo color de fondo que SignUpScreen
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: _emailController,
-                        decoration: const InputDecoration(
-                          labelText: 'Email',
-                          border: InputBorder.none,
-                        ),
-                      ),
-                      const Divider(color: AppColors.text),
-                      TextField(
-                        controller: _passwordController,
-                        decoration: const InputDecoration(
-                          labelText: 'Password',
-                          border: InputBorder.none,
-                        ),
-                        obscureText: true,
-                      ),
-                    ],
-                  ),
+                  obscureText: true,
                 ),
-                const SizedBox(height: 20.0),
+                SizedBox(height: 40),
+                // Botón de Log in
                 ElevatedButton(
                   onPressed: () {
-                    // Implement login functionality here
+                    // Implementar funcionalidad de login aquí
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                  child: Text(
+                    'Log in',
+                    style: TextStyle(
+                      fontSize: 18,
                     ),
                   ),
-                  child: const Text(
-                    'Login',
-                    style: TextStyle(
-                      fontSize: 16.0,
-                      color: Colors.white,
-                    ),
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.blue.shade800, // El mismo color que SignUpScreen
+                    onPrimary: Colors.white,
+                    shape: StadiumBorder(),
+                    padding: EdgeInsets.symmetric(horizontal: 120, vertical: 15),
                   ),
                 ),
-                const SizedBox(height: 12.0),
-                TextButton(
-                  onPressed: () {
+                SizedBox(height: 20),
+                // Enlace para registrarse
+                GestureDetector(
+                  onTap: () {
                     navigatorBloc.add(SignUpEvent());
                   },
-                  child: const Text(
+                  child: Text(
                     'Don\'t have an account? Sign up here.',
                     style: TextStyle(
-                      color: AppColors.text,
+                      color: Colors.blue.shade800, // El mismo color que SignUpScreen
+                      decoration: TextDecoration.underline,
                     ),
                   ),
                 ),
+                // Añadir SuccessMessage y FailureMessage si es necesario
               ],
             ),
           ),

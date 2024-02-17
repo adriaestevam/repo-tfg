@@ -35,4 +35,8 @@ class AuthRepository {
     // Devuelve un resultado cuando ocurre un error durante el registro del usuario
     print('User registration error');
   }
+
+  lookForUser(String email) {
+    //
+  }
 }
