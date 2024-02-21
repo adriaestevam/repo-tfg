@@ -32,7 +32,7 @@ class SignUpForm extends StatelessWidget {
     return BlocBuilder<SignUpBloc, SignUpState>(
       builder: (context, state) {
         if(state is SignUpSuccess){
-          navigatorBloc.add(StartInitialConfigutationEvent());
+          navigatorBloc.add(GoToStartInitialConfigutationEvent());
         }
         return Padding(
           padding: EdgeInsets.symmetric(horizontal: 40),
@@ -102,10 +102,10 @@ class SignUpForm extends StatelessWidget {
               // Switch to Sign In
               GestureDetector(
                 onTap: () {
-                  navigatorBloc.add(LoginEvent());
+                  navigatorBloc.add(GoToLoginEvent());
                 },
                 child: Text(
-                  'Already have an account? Sign in here.',
+                  'Already have an account? Log in here.',
                   style: TextStyle(
                     color: Colors.blue.shade800, // Adjust the color to match the image
                     decoration: TextDecoration.underline,

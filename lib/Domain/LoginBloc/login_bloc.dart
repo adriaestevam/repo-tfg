@@ -8,18 +8,18 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
   LoginBloc({required AuthRepository authRepository}) : super(LoginInitial()) {
     on<LoginButtonPressed>((event, emit) async {
-      try {
-        emit(LoginLoading());
-        
+      emit(LoginLoading());
+      try {        
         // Register user using a request to the auth repo.
-        try {
-          await authRepository.lookForUser(event.email);
-          emit(LoginSucess());
-        } catch (error) {
-          emit(LoginFailure(error: "Error checking email: $error"));
-          return;
-        }
-        
+        print("hola");
+          bool userFound = await authRepository.lookForUser(event.email, event.password);
+
+          if (userFound) {
+            emit(LoginSucess());
+          } else {
+            emit(LoginFailure(error: 'User not found'));
+          }
+
       } catch (error) {
         // If an exception occurs during the sign-up process, emit a failure state
         emit(LoginFailure(error: error.toString()));

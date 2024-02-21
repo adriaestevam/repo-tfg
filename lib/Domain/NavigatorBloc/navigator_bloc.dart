@@ -4,23 +4,23 @@ import 'navigator_state.dart';
 
 class NavigatorBloc extends Bloc<NavigatorEvent, NaviState> {
   NavigatorBloc() : super(NavigatorInitial()) {
-    on<LoginEvent>((event, emit) async {
+    on<GoToLoginEvent>((event, emit) async {
       try {
-        emit(LoginState());
+        emit(GoToLoginState());
       } catch (error) {
         print("Error: $error");
       }
     });
-    on<SignUpEvent>((event, emit) async {
+    on<GoToSignUpEvent>((event, emit) async {
       try {
-        emit(SignupState());
+        emit(GoToSignupState());
       } catch (error) {
         print("Error: $error");
       }
     });
-    on<StartInitialConfigutationEvent>((event, emit) async {
+    on<GoToStartInitialConfigutationEvent>((event, emit) async {
       try {
-        emit(StartInitialConfigutationState());
+        emit(GoToStartInitialConfigutationState());
       } catch (error) {
         print("Error: $error");
       }

@@ -1,42 +1,71 @@
 import 'package:meta/meta.dart';
+import 'DataService.dart';
 
 class AuthRepository {
-  Future<void> lookForEmail(String email) async {
-    // Simular la búsqueda de correo electrónico
-    // Aquí puedes agregar la lógica de simulación necesaria
-    await Future.delayed(Duration(seconds: 1));
-    return emailNotFound();
+  final DataService _dataService;
+
+  AuthRepository(this._dataService);
+
+  // Método para buscar un usuario por email y password
+  Future<bool> lookForUser(String email, String password) async {
+    var users = await _dataService.obtainUsers();
+    var userFound = users.any((user) => user['email'] == email && user['password'] == password);
+
+    if (userFound) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
-  Future<void> registerUser(String email, String password) async {
-    // Simular el registro de usuario
-    // Aquí puedes agregar la lógica de simulación necesaria
-    await Future.delayed(Duration(seconds: 1));
-    return userRegisteredSuccessfully();
+  // Respuestas para el login
+  Future<void> userNotFound() async {
+    print('User not found');
   }
 
-  // Respuestas
+  Future<void> userFound() async {
+    print('User found');
+  }
+
+  // Método para buscar un email
+  Future<bool> lookForEmail(String email) async {
+    var users = await _dataService.obtainUsers();
+    var emailExists = users.any((user) => user['email'] == email);
+
+    if (emailExists) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  // Método para registrar un usuario
+  Future<bool> registerUser(String email, String password) async {
+    var users = await _dataService.obtainUsers();
+    var emailExists = users.any((user) => user['email'] == email);
+
+    if (!emailExists) {
+      await _dataService.insertUser({'email': email, 'password': password});
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  // Respuestas para el registro
   Future<void> emailNotFound() async {
-    // Devuelve un resultado cuando el correo electrónico no se encuentra
     print('Email not found');
   }
 
   Future<void> emailFound() async {
-    // Devuelve un resultado cuando el correo electrónico se encuentra
     print('Email found');
   }
 
   Future<void> userRegisteredSuccessfully() async {
-    // Devuelve un resultado cuando el usuario se registra con éxito
     print('User registered successfully');
   }
 
   Future<void> userRegistrationError() async {
-    // Devuelve un resultado cuando ocurre un error durante el registro del usuario
     print('User registration error');
-  }
-
-  lookForUser(String email) {
-    //
   }
 }

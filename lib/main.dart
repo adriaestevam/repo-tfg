@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tfg_v1/Data/DataService.dart';
+import 'package:tfg_v1/Domain/LoginBloc/login_bloc.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_event.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_state.dart';
@@ -10,6 +12,9 @@ import 'package:tfg_v1/UI/Views/Initial%20Configuration/initial_configuration.da
 import 'package:tfg_v1/UI/Views/LoginSignup/LoginView.dart';
 import 'package:tfg_v1/UI/Views/LoginSignup/SignupView.dart';
 import 'Data/AuthRepository.dart';
+import 'Data/DataService.dart';
+
+
 void main() {
   runApp(MyApp());
 }
@@ -20,7 +25,7 @@ class MyApp extends StatelessWidget {
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider<AuthRepository>(
-          create: (context) => AuthRepository(),
+          create: (context) => AuthRepository(DataService()),
         ),
         // Agrega más RepositoryProviders según sea necesario
       ],
@@ -34,6 +39,11 @@ class MyApp extends StatelessWidget {
           BlocProvider<NavigatorBloc>(
             create: (context) => NavigatorBloc(),
           ),
+          BlocProvider<LoginBloc>(
+            create: (context) => LoginBloc(
+              authRepository: RepositoryProvider.of<AuthRepository>(context),
+            ),
+          ),
           // Agrega más BlocProviders si es necesario
         ],
         child: MaterialApp(
@@ -41,11 +51,11 @@ class MyApp extends StatelessWidget {
           theme: AppTheme.getAppTheme(),
           home: BlocBuilder<NavigatorBloc, NaviState>(
             builder: (context, state) {
-              if (state is LoginState) {
+              if (state is GoToLoginState) {
                 return LoginScreen();
-              } else if (state is SignupState) {
+              } else if (state is GoToSignupState) {
                 return SignUpScreen();
-              } else if (state is StartInitialConfigutationState){
+              } else if (state is GoToStartInitialConfigutationState){
                 return InitialConfigurationScreen();
               }
               return SignUpScreen(); // Manejo de estado no definido
@@ -57,4 +67,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
