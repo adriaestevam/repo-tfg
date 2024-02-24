@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tfg_v1/Data/DataService.dart';
+import 'package:tfg_v1/Domain/Initial%20Configuration%20Bloc/initial_config_bloc.dart';
 import 'package:tfg_v1/Domain/LoginBloc/login_bloc.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_event.dart';
@@ -11,6 +12,7 @@ import 'package:tfg_v1/UI/Utilities/Routes.dart';
 import 'package:tfg_v1/UI/Views/Initial%20Configuration/initial_configuration.dart';
 import 'package:tfg_v1/UI/Views/LoginSignup/LoginView.dart';
 import 'package:tfg_v1/UI/Views/LoginSignup/SignupView.dart';
+import 'package:tfg_v1/UI/Views/home_page.dart';
 import 'Data/AuthRepository.dart';
 import 'Data/DataService.dart';
 
@@ -44,6 +46,11 @@ class MyApp extends StatelessWidget {
               authRepository: RepositoryProvider.of<AuthRepository>(context),
             ),
           ),
+          BlocProvider<InitialConfigBloc>(
+            create: (context) => InitialConfigBloc(
+              authRepository: RepositoryProvider.of<AuthRepository>(context),
+            ),
+          ),
           // Agrega más BlocProviders si es necesario
         ],
         child: MaterialApp(
@@ -57,8 +64,10 @@ class MyApp extends StatelessWidget {
                 return SignUpScreen();
               } else if (state is GoToStartInitialConfigutationState){
                 return InitialConfigurationScreen();
+              } else if(state is GoToHomeState){
+                return HomeScreen();
               }
-              return SignUpScreen(); // Manejo de estado no definido
+              return LoginScreen(); // Manejo de estado no definido
             },
           ),
           routes: Routes.routes,

@@ -22,6 +22,8 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
+
+
 class LoginForm extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -30,12 +32,19 @@ class LoginForm extends StatelessWidget {
   Widget build(BuildContext context) {
     final NavigatorBloc navigatorBloc = BlocProvider.of<NavigatorBloc>(context);
     final LoginBloc loginBloc = BlocProvider.of<LoginBloc>(context);
+    final ThemeData theme = Theme.of(context);
+    final TextStyle linkStyle = TextStyle(
+      color: theme.colorScheme.secondary,
+      fontSize: 16,
+      fontWeight: FontWeight.bold,
+    );
 
     return BlocBuilder<LoginBloc, LoginState>(
       builder: (context, state) {
-        if(state is LoginSucess){
-          navigatorBloc.add(GoToStartInitialConfigutationEvent());
+        if (state is LoginSucess) {
+          navigatorBloc.add(GoToHomeEvent());
         }
+
         return Padding(
           padding: EdgeInsets.symmetric(horizontal: 40),
           child: Column(
@@ -43,10 +52,7 @@ class LoginForm extends StatelessWidget {
             children: [
               Text(
                 'Log In',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: theme.textTheme.headline1,
               ),
               SizedBox(height: 20),
               TextField(
@@ -54,6 +60,12 @@ class LoginForm extends StatelessWidget {
                 decoration: InputDecoration(
                   labelText: 'Email',
                   border: OutlineInputBorder(),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: theme.primaryColor, width: 2.0),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: theme.colorScheme.secondary, width: 2.0),
+                  ),
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
@@ -63,6 +75,12 @@ class LoginForm extends StatelessWidget {
                 decoration: InputDecoration(
                   labelText: 'Password',
                   border: OutlineInputBorder(),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: theme.primaryColor, width: 2.0),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: theme.colorScheme.secondary, width: 2.0),
+                  ),
                 ),
                 obscureText: true,
               ),
@@ -71,23 +89,21 @@ class LoginForm extends StatelessWidget {
                 onPressed: () {
                   final email = _emailController.text;
                   final password = _passwordController.text;
-                  loginBloc.add(LoginButtonPressed(email, password));
+                  loginBloc.add(LoginButtonPressed(email,password));
                 },
                 child: Text('Log In'),
               ),
-              // Mostrar indicador de carga si el estado es LoginLoading
               if (state is LoginLoading) CircularProgressIndicator(),
-              // Mostrar mensaje de error si el estado es LoginFailure
               if (state is LoginFailure) Text(
                 state.error,
-                style: TextStyle(color: Colors.red),
+                style: TextStyle(color: theme.errorColor),
               ),
               SizedBox(height: 20),
               GestureDetector(
                 onTap: () {
                   navigatorBloc.add(GoToSignUpEvent());
                 },
-                child: Text('Don\'t have an account? Sign up here.'),
+                child: Text('Don\'t have an account? Sign up here.', style: linkStyle),
               ),
             ],
           ),
@@ -96,4 +112,5 @@ class LoginForm extends StatelessWidget {
     );
   }
 }
+
 

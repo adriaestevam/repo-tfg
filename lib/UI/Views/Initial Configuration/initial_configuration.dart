@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tfg_v1/Domain/Initial%20Configuration%20Bloc/initial_config_event.dart';
+import 'package:tfg_v1/Domain/Initial%20Configuration%20Bloc/initial_config_state.dart';
+import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
+import 'package:tfg_v1/Domain/NavigatorBloc/navigator_event.dart';
 import 'package:tfg_v1/UI/Views/Initial%20Configuration/addNewSubject.dart';
+
+import '../../../Domain/Initial Configuration Bloc/initial_config_bloc.dart';
 
 class InitialConfigurationScreen extends StatefulWidget {
   @override
@@ -21,6 +28,7 @@ class _InitialConfigurationScreenState
   int _activeDayStep = 0; // Para manejar el día activo en el Stepper
 
   List<Step> _buildStudySteps() {
+    ThemeData theme = Theme.of(context); // Obtenemos el tema actual
     var daysOfWeek = [
       'Monday',
       'Tuesday',
@@ -34,26 +42,54 @@ class _InitialConfigurationScreenState
     return List.generate(daysOfWeek.length, (index) {
       String day = daysOfWeek[index];
       return Step(
-        title: Text(day),
+        title: Text(
+          day,
+          style: theme
+              .textTheme.subtitle1, // Estilo de texto para el título del paso
+        ),
         content: Column(
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Start Time:'),
+                Text(
+                  'Start Time:',
+                  style: theme
+                      .textTheme.bodyText1, // Estilo de texto para el cuerpo
+                ),
                 TextButton(
                   onPressed: () => _selectTime(context, day, true),
-                  child: Text('${studyStartTimes[day]!.format(context)}'),
+                  child: Text(
+                    '${studyStartTimes[day]!.format(context)}',
+                    style:
+                        theme.textTheme.button, // Estilo de texto para botones
+                  ),
+                  style: TextButton.styleFrom(
+                    primary: theme
+                        .colorScheme.onSurface, // Color del texto del botón
+                  ),
                 ),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('End Time:'),
+                Text(
+                  'End Time:',
+                  style: theme
+                      .textTheme.bodyText1, // Estilo de texto para el cuerpo
+                ),
                 TextButton(
                   onPressed: () => _selectTime(context, day, false),
-                  child: Text('${studyEndTimes[day]!.format(context)}'),
+                  child: Text(
+                    '${studyEndTimes[day]!.format(context)}',
+                    style:
+                        theme.textTheme.button, // Estilo de texto para botones
+                  ),
+                  style: TextButton.styleFrom(
+                    primary: theme
+                        .colorScheme.onSurface, // Color del texto del botón
+                  ),
                 ),
               ],
             ),
@@ -64,12 +100,6 @@ class _InitialConfigurationScreenState
       );
     });
   }
-
-  // Define the colors used in the UI (replace with your actual colors)
-  final Color primaryColor = Color(0xFF4A64FE);
-  final Color backgroundColor = Color(0xFFF0F2F5);
-  final Color accentColor = Color(0xFF6C757D);
-  final Color textColor = Color(0xFF212529);
 
   final List<String> stepLabels = [
     'Enter Your Name',
@@ -126,8 +156,10 @@ class _InitialConfigurationScreenState
     }
   }
 
-  Widget _buildCircularStepIndicator() {
+  Widget _buildCircularStepIndicator(BuildContext context) {
+    ThemeData theme = Theme.of(context); // Obtenemos el tema actual
     double progressValue = (_currentStep + 1) / _totalSteps;
+
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -136,138 +168,158 @@ class _InitialConfigurationScreenState
           height: 80,
           child: CircularProgressIndicator(
             value: progressValue,
-            backgroundColor: Colors.grey.shade300,
-            valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+            backgroundColor: theme.colorScheme
+                .background, // Usamos el color de fondo del tema para la barra de progreso
+            valueColor: AlwaysStoppedAnimation<Color>(
+                theme.colorScheme.primary), // Color primario para el progreso
             strokeWidth: 6,
           ),
         ),
         Text(
           'Step ${_currentStep + 1} of $_totalSteps',
-          style: TextStyle(
-              fontSize: 12, fontWeight: FontWeight.bold, color: textColor),
+          style: theme.textTheme.bodyText2?.copyWith(
+            // Asegúrate de que bodyText2 está definido en tu AppTheme
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: theme.colorScheme
+                .onBackground, // Color de texto sobre fondo, para mejor contraste
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildStepTitle() {
+  Widget _buildStepTitle(BuildContext context) {
+    ThemeData theme = Theme.of(context); // Obtenemos el tema actual
+
     return Column(
       children: [
         Text(
           stepLabels[_currentStep],
-          style: TextStyle(
-              fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+          style: theme.textTheme.headline6?.copyWith(
+            fontWeight: FontWeight.bold,
+            // El color ya está definido en el estilo del tema, por lo que no es necesario especificarlo aquí
+          ),
         ),
         if (_currentStep < _totalSteps - 1)
-          Text('Next: ${stepLabels[_currentStep + 1]}',
-              style: TextStyle(fontSize: 16, color: accentColor)),
+          Text(
+            'Next: ${stepLabels[_currentStep + 1]}',
+            style: theme.textTheme.subtitle1?.copyWith(
+              color: theme.colorScheme
+                  .secondary, // Utiliza el color secundario del esquema de colores del tema
+            ),
+          ),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    ThemeData theme = ThemeData(
-      primaryColor: primaryColor,
-      scaffoldBackgroundColor: backgroundColor,
-      hintColor: accentColor,
-      textTheme: Theme.of(context)
-          .textTheme
-          .apply(bodyColor: textColor, displayColor: textColor),
-      inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: EdgeInsets.symmetric(horizontal: 16),
-        labelStyle: TextStyle(color: accentColor),
-      ),
-      buttonTheme: ButtonThemeData(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        buttonColor: primaryColor,
-      ),
-    );
+    ThemeData theme = Theme.of(context); // Usamos el tema global
+    final InitialConfigBloc initialConfigBloc = BlocProvider.of<InitialConfigBloc>(context);
+    final NavigatorBloc navigatorBloc = BlocProvider.of<NavigatorBloc>(context);
 
-    return MaterialApp(
-      theme: theme,
-      home: Scaffold(
-        appBar: AppBar(
-          title:
-              Text('Initial Configuration', style: TextStyle(color: textColor)),
-          backgroundColor: backgroundColor,
-          elevation: 0,
-        ),
-        body: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: _buildCircularStepIndicator(),
+    return BlocBuilder<InitialConfigBloc, InitialConfigState>(
+      builder: (context, state) {
+        return MaterialApp(
+          theme: theme, // Aplicamos el tema a MaterialApp
+          home: Scaffold(
+            appBar: AppBar(
+              title: Text('Initial Configuration',
+                  style: theme.textTheme
+                      .headline6), // Usamos el estilo de texto del tema para el título
+              backgroundColor: theme.appBarTheme
+                  .backgroundColor, // Color de fondo del AppBar del tema
+              elevation: 0,
             ),
-            _buildStepTitle(),
-            Expanded(child: _buildStepContent()),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  if (_currentStep > 0)
-                    OutlinedButton(
-                      child: Text('Back', style: TextStyle(color: textColor)),
-                      onPressed: () {
-                        setState(() {
-                          if (_currentStep > 0) _currentStep--;
-                        });
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: primaryColor),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+            body: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: _buildCircularStepIndicator(
+                      context), // Asegúrate de que este método use también el tema
+                ),
+                _buildStepTitle(
+                    context), // Asegúrate de que este método use también el tema
+                Expanded(
+                    child: _buildStepContent(
+                        context)), // Asegúrate de que este método use también el tema
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 8.0, horizontal: 16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (_currentStep > 0)
+                        OutlinedButton(
+                          child: Text('Back', style: theme.textTheme.button),
+                          onPressed: () {
+                            setState(() {
+                              if (_currentStep > 0) _currentStep--;
+                            });
+                          },
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: theme.colorScheme.primary),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ElevatedButton(
+                        child: Text(
+                            _currentStep == _totalSteps - 1 ? 'Finish' : 'Next',
+                            style: theme.textTheme.button
+                                ?.copyWith(color: Colors.white)),
+                        onPressed: () {
+                          if (_currentStep < _totalSteps - 1) {
+                            setState(() {
+                              _currentStep++;
+                            });
+                          } else {
+                            initialConfigBloc.add(EndOfInitialConfiguration(
+                              user_name: _nameController.text,
+                              university: _universityController.text,
+                              selectedSubjects: selectedSubjects,
+                              objectives: objectives,
+                              studyStartTimes: studyStartTimes,
+                              studyEndTimes:  studyEndTimes
+                            ));
+                            navigatorBloc.add(GoToHomeEvent());
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          primary: theme.colorScheme.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 32, vertical: 12),
                         ),
                       ),
-                    ),
-                  ElevatedButton(
-                    child: Text(
-                        _currentStep == _totalSteps - 1 ? 'Finish' : 'Next',
-                        style: TextStyle(color: Colors.white)),
-                    onPressed: () {
-                      if (_currentStep < _totalSteps - 1) {
-                        setState(() {
-                          _currentStep++;
-                        });
-                      } else {
-                        // Finish the configuration
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      primary: primaryColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildStepContent() {
-    // Style the form fields according to the design
+  Widget _buildStepContent(BuildContext context) {
+    ThemeData theme = Theme.of(context); // Obtenemos el tema actual
+
     return Container(
       padding: const EdgeInsets.all(16.0),
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 4,
+        color: theme.cardColor, // Usa el color de tarjeta definido en el tema
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: _getStepContent(_currentStep),
+          child: _getStepContent(
+              _currentStep), // Asegúrate de que este método también use el tema
         ),
       ),
     );
@@ -276,27 +328,29 @@ class _InitialConfigurationScreenState
   Widget _getStepContent(int stepIndex) {
     switch (stepIndex) {
       case 0:
-        return _buildNameStep();
+        return _buildNameStep(context);
       case 1:
-        return _buildUniversityStep();
+        return _buildUniversityStep(context);
       case 2:
-        return _buildSubjectsStep();
+        return _buildSubjectsStep(context);
 
       case 3:
-        return _buildPrioritiesStep();
+        return _buildPrioritiesStep(context);
       case 4:
-        return _buildObjectivesStep();
+        return _buildObjectivesStep(context);
       case 5:
-        return _buildStudyBlockStep();
+        return _buildStudyBlockStep(context);
       default:
         return Center(
             child: Text(
           'Unknown step',
-        )); //add style?¿
+        ));
     }
   }
 
-  Widget _buildNameStep() {
+  Widget _buildNameStep(BuildContext context) {
+    ThemeData theme = Theme.of(context); // Obtenemos el tema actual
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -306,16 +360,15 @@ class _InitialConfigurationScreenState
             children: [
               Icon(
                 Icons.emoji_emotions,
-                color: primaryColor,
+                color:
+                    theme.colorScheme.primary, // Usa el color primario del tema
               ),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Hello there! What name should we use for you?',
-                  style: TextStyle(
-                    fontSize: 16,
+                  style: theme.textTheme.subtitle1?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: textColor,
                   ),
                 ),
               ),
@@ -326,18 +379,24 @@ class _InitialConfigurationScreenState
           controller: _nameController,
           decoration: InputDecoration(
             labelText: 'Your name',
-            labelStyle: TextStyle(color: accentColor),
+            labelStyle: theme.textTheme.caption?.copyWith(
+                color: theme
+                    .colorScheme.secondary), // Usa el estilo de texto del tema
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
             ),
-            prefixIcon: Icon(Icons.person, color: accentColor),
+            prefixIcon: Icon(Icons.person,
+                color: theme
+                    .colorScheme.secondary), // Usa el color secundario del tema
           ),
         ),
       ],
     );
   }
 
-  Widget _buildUniversityStep() {
+  Widget _buildUniversityStep(BuildContext context) {
+    ThemeData theme = Theme.of(context); // Obtenemos el tema actual
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -345,15 +404,18 @@ class _InitialConfigurationScreenState
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Row(
             children: [
-              Icon(Icons.school, color: primaryColor),
+              Icon(
+                Icons.school,
+                color:
+                    theme.colorScheme.primary, // Usa el color primario del tema
+              ),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Which university are you affiliated with?',
-                  style: TextStyle(
-                    fontSize: 16,
+                  style: theme.textTheme.subtitle1?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: textColor,
+                    // El color ya está definido en el estilo del tema
                   ),
                 ),
               ),
@@ -364,18 +426,26 @@ class _InitialConfigurationScreenState
           controller: _universityController,
           decoration: InputDecoration(
             labelText: 'University name',
-            labelStyle: TextStyle(color: accentColor),
+            labelStyle: theme.textTheme.caption?.copyWith(
+                color: theme
+                    .colorScheme.secondary), // Usa el estilo de texto del tema
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
             ),
-            prefixIcon: Icon(Icons.search, color: accentColor),
+            prefixIcon: Icon(
+              Icons.search,
+              color: theme
+                  .colorScheme.secondary, // Usa el color secundario del tema
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSubjectsStep() {
+  Widget _buildSubjectsStep(BuildContext context) {
+    ThemeData theme = Theme.of(context); // Obtenemos el tema actual
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -383,15 +453,18 @@ class _InitialConfigurationScreenState
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Row(
             children: [
-              Icon(Icons.book, color: primaryColor),
+              Icon(
+                Icons.book,
+                color:
+                    theme.colorScheme.primary, // Usa el color primario del tema
+              ),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Do you take any of these subjects?',
-                  style: TextStyle(
-                    fontSize: 16,
+                  style: theme.textTheme.subtitle1?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: textColor,
+                    // El color ya está definido en el estilo del tema
                   ),
                 ),
               ),
@@ -402,16 +475,16 @@ class _InitialConfigurationScreenState
           child: ListView(
             children: subjects
                 .map((subject) => CheckboxListTile(
-                      title: Text(subject,
-                          style: TextStyle(fontSize: 16, color: textColor)),
+                      title: Text(subject, style: theme.textTheme.bodyText1),
                       value: selectedSubjects[subject] ?? false,
                       onChanged: (bool? value) {
                         setState(() {
                           selectedSubjects[subject] = value!;
                         });
                       },
-                      secondary: Icon(Icons.school, color: accentColor),
-                      activeColor: primaryColor,
+                      secondary: Icon(Icons.school,
+                          color: theme.colorScheme.secondary),
+                      activeColor: theme.colorScheme.primary,
                       checkColor: Colors.white,
                       contentPadding: EdgeInsets.symmetric(horizontal: 16),
                     ))
@@ -422,7 +495,7 @@ class _InitialConfigurationScreenState
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Text(
             'Add a subject if you don\'t find yours',
-            style: TextStyle(fontSize: 16, color: textColor),
+            style: theme.textTheme.bodyText1,
           ),
         ),
         Padding(
@@ -437,7 +510,7 @@ class _InitialConfigurationScreenState
               );
             },
             style: ElevatedButton.styleFrom(
-              primary: primaryColor,
+              primary: theme.colorScheme.primary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -448,7 +521,9 @@ class _InitialConfigurationScreenState
     );
   }
 
-  Widget _buildPrioritiesStep() {
+  Widget _buildPrioritiesStep(BuildContext context) {
+    ThemeData theme = Theme.of(context); // Obtenemos el tema actual
+
     // Filtrar y crear una lista de las materias seleccionadas
     List<String> selectedSubjectList = subjects
         .where((subject) => selectedSubjects[subject] ?? false)
@@ -461,15 +536,18 @@ class _InitialConfigurationScreenState
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Row(
             children: [
-              Icon(Icons.sort, color: primaryColor),
+              Icon(
+                Icons.sort,
+                color:
+                    theme.colorScheme.primary, // Usa el color primario del tema
+              ),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Sort your subjects by importance for you',
-                  style: TextStyle(
-                    fontSize: 16,
+                  style: theme.textTheme.subtitle1?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: textColor,
+                    // El color ya está definido en el estilo del tema
                   ),
                 ),
               ),
@@ -493,9 +571,16 @@ class _InitialConfigurationScreenState
                       index,
                       ListTile(
                         key: ValueKey('$subject-$index'),
-                        title: Text(subject,
-                            style: TextStyle(fontSize: 16, color: textColor)),
-                        leading: Icon(Icons.drag_handle, color: accentColor),
+                        title: Text(
+                          subject,
+                          style: theme.textTheme
+                              .bodyText1, // Usa el estilo de texto del tema
+                        ),
+                        leading: Icon(
+                          Icons.drag_handle,
+                          color: theme.colorScheme
+                              .secondary, // Usa el color secundario del tema
+                        ),
                       ),
                     ))
                 .values
@@ -506,17 +591,20 @@ class _InitialConfigurationScreenState
     );
   }
 
-  Widget _buildObjectiveOptions(String subject) {
+  Widget _buildObjectiveOptions(String subject, BuildContext context) {
+    ThemeData theme = Theme.of(context); // Obtenemos el tema actual
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <String>['Pass', 'Honors', 'None'].map((String value) {
+        bool isSelected = objectives[subject] == value;
         return Expanded(
           child: Container(
             margin: EdgeInsets.symmetric(
                 horizontal: 8), // Añade espacio entre las opciones
             child: ChoiceChip(
               label: Text(value),
-              selected: objectives[subject] == value,
+              selected: isSelected,
               onSelected: (bool selected) {
                 setState(() {
                   if (selected) {
@@ -524,17 +612,24 @@ class _InitialConfigurationScreenState
                   }
                 });
               },
-              selectedColor: primaryColor,
-              labelStyle: TextStyle(
-                color: objectives[subject] == value ? Colors.white : textColor,
+              selectedColor:
+                  theme.colorScheme.primary, // Usa el color primario del tema
+              labelStyle: theme.textTheme.button?.copyWith(
+                color: isSelected
+                    ? Colors.white
+                    : theme.colorScheme
+                        .onSurface, // Ajusta el color del texto según el estado del chip
                 fontWeight: FontWeight.bold,
               ),
-              backgroundColor: Colors.white,
+              backgroundColor: theme.colorScheme
+                  .surface, // Usa el color de superficie del tema para el fondo
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
-                    color:
-                        textColor), // Agrega un borde para una mejor visibilidad
+                    color: isSelected
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme
+                            .onSurface), // Borde con el color del tema
               ),
             ),
           ),
@@ -543,7 +638,9 @@ class _InitialConfigurationScreenState
     );
   }
 
-  Widget _buildObjectivesStep() {
+  Widget _buildObjectivesStep(BuildContext context) {
+    ThemeData theme = Theme.of(context); // Obtenemos el tema actual
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -551,10 +648,9 @@ class _InitialConfigurationScreenState
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Text(
             'Set your goal for each subject',
-            style: TextStyle(
-              fontSize: 16,
+            style: theme.textTheme.subtitle1?.copyWith(
               fontWeight: FontWeight.bold,
-              color: textColor,
+              // El color ya está definido en el estilo del tema
             ),
           ),
         ),
@@ -563,9 +659,12 @@ class _InitialConfigurationScreenState
             itemCount: subjects.length,
             itemBuilder: (context, index) {
               return ListTile(
-                title: Text(subjects[index],
-                    style: TextStyle(fontSize: 16, color: textColor)),
-                subtitle: _buildObjectiveOptions(subjects[index]),
+                title: Text(
+                  subjects[index],
+                  style: theme
+                      .textTheme.bodyText1, // Usa el estilo de texto del tema
+                ),
+                subtitle: _buildObjectiveOptions(subjects[index], context),
               );
             },
           ),
@@ -574,23 +673,16 @@ class _InitialConfigurationScreenState
     );
   }
 
-  Widget _buildStudyBlockStep() {
-  return Theme(
-    data: ThemeData(
-      colorScheme: ColorScheme.light(
-        primary: primaryColor,
-        // Añade más personalización si es necesario
-      ),
-      textTheme: TextTheme(
-        // Personaliza el tema de texto si es necesario
-      ),
-    ),
-    child: Stepper(
-      type: StepperType.vertical, 
-      steps: _buildStudySteps(),
+  Widget _buildStudyBlockStep(BuildContext context) {
+    ThemeData theme = Theme.of(context); // Obtenemos el tema actual
+
+    return Stepper(
+      type: StepperType.vertical,
+      steps:
+          _buildStudySteps(), // Asegúrate de que este método también use el tema
       currentStep: _activeDayStep,
       onStepTapped: (step) => setState(() => _activeDayStep = step),
-       onStepContinue: () {
+      onStepContinue: () {
         if (_activeDayStep < 6) {
           setState(() => _activeDayStep += 1);
         }
@@ -605,17 +697,15 @@ class _InitialConfigurationScreenState
           children: <Widget>[
             TextButton(
               onPressed: details.onStepContinue,
-              child: const Text('Next'),
+              child: Text('Next', style: theme.textTheme.button),
             ),
             TextButton(
               onPressed: details.onStepCancel,
-              child: const Text('Back'),
+              child: Text('Back', style: theme.textTheme.button),
             ),
           ],
         );
       },
-    ),
-  );
-}
-
+    );
+  }
 }

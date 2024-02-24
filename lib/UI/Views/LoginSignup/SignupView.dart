@@ -28,10 +28,17 @@ class SignUpForm extends StatelessWidget {
   Widget build(BuildContext context) {
     final SignUpBloc signUpBloc = BlocProvider.of<SignUpBloc>(context);
     final NavigatorBloc navigatorBloc = BlocProvider.of<NavigatorBloc>(context);
+    final ThemeData theme = Theme.of(context);
+    final TextStyle linkStyle = TextStyle(
+      color: theme.colorScheme.secondary,
+      fontSize: 16,
+      fontWeight: FontWeight.bold,
+      decoration: TextDecoration.underline,
+    );
 
     return BlocBuilder<SignUpBloc, SignUpState>(
       builder: (context, state) {
-        if(state is SignUpSuccess){
+        if (state is SignUpSuccess) {
           navigatorBloc.add(GoToStartInitialConfigutationEvent());
         }
         return Padding(
@@ -41,24 +48,21 @@ class SignUpForm extends StatelessWidget {
             children: [
               Text(
                 'Create Account',
-                style: TextStyle(
-                  color: Colors.blue.shade800, // Adjust the color to match the image
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: theme.textTheme.headline1, // Utilizando el estilo del tema
               ),
               SizedBox(height: 20),
               // Email field
               TextField(
                 controller: emailController,
                 decoration: InputDecoration(
-                  hintText: 'Your Email',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25.0),
-                    borderSide: BorderSide.none,
+                  labelText: 'Your Email',
+                  border: OutlineInputBorder(),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: theme.primaryColor, width: 2.0),
                   ),
-                  filled: true,
-                  fillColor: Colors.blue.shade50,
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: theme.colorScheme.secondary, width: 2.0),
+                  ),
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
@@ -67,13 +71,14 @@ class SignUpForm extends StatelessWidget {
               TextField(
                 controller: passwordController,
                 decoration: InputDecoration(
-                  hintText: 'Password',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25.0),
-                    borderSide: BorderSide.none,
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: theme.primaryColor, width: 2.0),
                   ),
-                  filled: true,
-                  fillColor: Colors.blue.shade50,
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: theme.colorScheme.secondary, width: 2.0),
+                  ),
                 ),
                 obscureText: true,
               ),
@@ -85,18 +90,8 @@ class SignUpForm extends StatelessWidget {
                   final password = passwordController.text;
                   signUpBloc.add(SignUpButtonPressed(email: email, password: password));
                 },
-                child: Text(
-                  'Sign Up',
-                  style: TextStyle(
-                    fontSize: 18,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.blue.shade800, // Adjust the button color to match the image
-                  onPrimary: Colors.white,
-                  shape: StadiumBorder(),
-                  padding: EdgeInsets.symmetric(horizontal: 120, vertical: 15),
-                ),
+                child: Text('Sign Up'),
+                // El estilo del botón ya está definido en el tema
               ),
               SizedBox(height: 20),
               // Switch to Sign In
@@ -106,18 +101,15 @@ class SignUpForm extends StatelessWidget {
                 },
                 child: Text(
                   'Already have an account? Log in here.',
-                  style: TextStyle(
-                    color: Colors.blue.shade800, // Adjust the color to match the image
-                    decoration: TextDecoration.underline,
-                  ),
+                  style: linkStyle, // Estilo de enlace definido arriba
                 ),
               ),
               if (state is SignUpLoading) // Show loading indicator
                 CircularProgressIndicator(),
               if (state is SignUpSuccess) // Show success message
-                Text('Sign Up Successful!'),
+                Text('Sign Up Successful!', style: TextStyle(color: theme.primaryColor)),
               if (state is SignUpFailure) // Show failure message
-                Text('Sign Up Failed: ${state.error}'),
+                Text('Sign Up Failed: ${state.error}', style: TextStyle(color: theme.errorColor)),
             ],
           ),
         );
@@ -125,6 +117,7 @@ class SignUpForm extends StatelessWidget {
     );
   }
 }
+
 
 class SuccessMessage extends StatelessWidget {
   final String message;

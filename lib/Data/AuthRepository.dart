@@ -1,3 +1,4 @@
+import 'package:flutter/src/material/time.dart';
 import 'package:meta/meta.dart';
 import 'DataService.dart';
 
@@ -41,6 +42,8 @@ class AuthRepository {
 
   // Método para registrar un usuario
   Future<bool> registerUser(String email, String password) async {
+    await _dataService.printEverything();
+
     var users = await _dataService.obtainUsers();
     var emailExists = users.any((user) => user['email'] == email);
 
@@ -67,5 +70,36 @@ class AuthRepository {
 
   Future<void> userRegistrationError() async {
     print('User registration error');
+  }
+
+  //Initial Configuration
+
+  //Request
+  Future<void> registerInitialConfig(String user_name, String university, Map<String, bool> selectedSubjects, Map<String, String> objectives, Map<String, TimeOfDay> studyStartTimes, Map<String, TimeOfDay> studyEndTimes) async {
+    await _dataService.printEverything();
+
+    //Suponiendo que obtenemos el ID del usuario actual de alguna manera
+    int userId = 100; // Obtener el ID del usuario
+
+    // Insertar en ConfiguracionInicial
+    await _dataService.insertInitialConfiguration({user_name: user_name, university: university});
+
+    // Iterar sobre selectedSubjects y insertar en MateriasSeleccionadas
+    // Insert Selected Subjects
+    selectedSubjects.forEach((subject, selected) async {
+      await _dataService.insertSelectedSubjects(userId,selectedSubjects);
+    });
+
+    // Insert Objectives
+    objectives.forEach((objective, description) async {
+      await _dataService.insertObjectives(userId, objectives);
+    });
+
+    // Insert Study Blocs
+    studyStartTimes.forEach((day, startTime) async {
+      var endTime = studyEndTimes[day];
+      await _dataService.insertStudyBlocs(userId,studyStartTimes,studyEndTimes);
+    });
+
   }
 }
