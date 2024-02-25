@@ -1,5 +1,6 @@
 import 'package:flutter/src/material/time.dart';
 import 'package:meta/meta.dart';
+import 'package:tfg_v1/Data/Models/subject.dart';
 import 'DataService.dart';
 
 class AuthRepository {
@@ -75,7 +76,7 @@ class AuthRepository {
   //Initial Configuration
 
   //Request
-  Future<void> registerInitialConfig(String user_name, String university, Map<String, bool> selectedSubjects, Map<String, String> objectives, Map<String, TimeOfDay> studyStartTimes, Map<String, TimeOfDay> studyEndTimes) async {
+  Future<void> registerInitialConfig(String user_name, String university, Map<Subject, bool> selectedSubjects, Map<Subject, String> objectives, Map<String, TimeOfDay> studyStartTimes, Map<String, TimeOfDay> studyEndTimes) async {
     await _dataService.printEverything();
 
     //Suponiendo que obtenemos el ID del usuario actual de alguna manera

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:tfg_v1/Data/Models/subject.dart';
 
 class DataService {
   static Database? _database;
@@ -82,7 +83,7 @@ class DataService {
     await db.insert('ConfiguracionInicial', configInfo, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<void> insertSelectedSubjects(int userId, Map<String, bool> selectedSubjects) async {
+  Future<void> insertSelectedSubjects(int userId, Map<Subject, bool> selectedSubjects) async {
     final db = await database;
     for (var subject in selectedSubjects.entries) {
       await db.insert('MateriasSeleccionadas', {
@@ -93,7 +94,7 @@ class DataService {
     }
   }
 
-  Future<void> insertObjectives(int userId, Map<String, String> objectives) async {
+  Future<void> insertObjectives(int userId, Map<Subject, String> objectives) async {
     final db = await database;
     for (var objective in objectives.entries) {
       await db.insert('Objetivos', {

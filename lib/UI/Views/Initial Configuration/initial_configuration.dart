@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tfg_v1/Data/Models/subject.dart';
 import 'package:tfg_v1/Domain/Initial%20Configuration%20Bloc/initial_config_event.dart';
 import 'package:tfg_v1/Domain/Initial%20Configuration%20Bloc/initial_config_state.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
@@ -20,9 +21,29 @@ class _InitialConfigurationScreenState
   final int _totalSteps = 6;
   final _nameController = TextEditingController();
   final _universityController = TextEditingController();
-  List<String> subjects = ['Math', 'Physics', 'Chemistry']; // Example subjects
-  Map<String, bool> selectedSubjects = {};
-  Map<String, String> objectives = {}; // Almacena 'Pass', 'Honors' o 'None'
+  List<Subject> subjects = [
+  Subject(
+    id: '1',
+    name: 'Math',
+    credits: 4,
+    formula: 'Math Formula',
+  ),
+  Subject(
+    id: '2',
+    name: 'Physics',
+    credits: 3,
+    formula: 'Physics Formula',
+  ),
+  Subject(
+    id: '3',
+    name: 'Chemistry',
+    credits: 4,
+    formula: 'Chemistry Formula',
+  ),
+];
+// Example subjects
+  Map<Subject, bool> selectedSubjects = {};
+  Map<Subject, String> objectives = {}; // Almacena 'Pass', 'Honors' o 'None'
   Map<String, TimeOfDay> studyStartTimes = {};
   Map<String, TimeOfDay> studyEndTimes = {};
   int _activeDayStep = 0; // Para manejar el día activo en el Stepper
@@ -475,7 +496,7 @@ class _InitialConfigurationScreenState
           child: ListView(
             children: subjects
                 .map((subject) => CheckboxListTile(
-                      title: Text(subject, style: theme.textTheme.bodyText1),
+                      title: Text(subject.name, style: theme.textTheme.bodyText1),
                       value: selectedSubjects[subject] ?? false,
                       onChanged: (bool? value) {
                         setState(() {
@@ -503,11 +524,17 @@ class _InitialConfigurationScreenState
           child: ElevatedButton.icon(
             icon: Icon(Icons.add, color: Colors.white),
             label: Text('Add Subject', style: TextStyle(color: Colors.white)),
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              final result = await Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => AddNewSubject()),
+                MaterialPageRoute(builder: (context) => AddNewSubjectScreen()),
               );
+
+              if (result is Subject){
+                setState(() {
+                  subjects.add(result as Subject);
+                });
+              }
             },
             style: ElevatedButton.styleFrom(
               primary: theme.colorScheme.primary,
@@ -525,7 +552,7 @@ class _InitialConfigurationScreenState
     ThemeData theme = Theme.of(context); // Obtenemos el tema actual
 
     // Filtrar y crear una lista de las materias seleccionadas
-    List<String> selectedSubjectList = subjects
+    List<Subject> selectedSubjectList = subjects
         .where((subject) => selectedSubjects[subject] ?? false)
         .toList();
 
@@ -561,7 +588,7 @@ class _InitialConfigurationScreenState
                 newIndex -= 1;
               }
               setState(() {
-                final String item = selectedSubjectList.removeAt(oldIndex);
+                final Subject item = selectedSubjectList.removeAt(oldIndex);
                 selectedSubjectList.insert(newIndex, item);
               });
             },
@@ -572,7 +599,7 @@ class _InitialConfigurationScreenState
                       ListTile(
                         key: ValueKey('$subject-$index'),
                         title: Text(
-                          subject,
+                          subject.name,
                           style: theme.textTheme
                               .bodyText1, // Usa el estilo de texto del tema
                         ),
@@ -591,7 +618,7 @@ class _InitialConfigurationScreenState
     );
   }
 
-  Widget _buildObjectiveOptions(String subject, BuildContext context) {
+  Widget _buildObjectiveOptions(Subject subject, BuildContext context) {
     ThemeData theme = Theme.of(context); // Obtenemos el tema actual
 
     return Row(
@@ -660,7 +687,7 @@ class _InitialConfigurationScreenState
             itemBuilder: (context, index) {
               return ListTile(
                 title: Text(
-                  subjects[index],
+                  subjects[index].name,
                   style: theme
                       .textTheme.bodyText1, // Usa el estilo de texto del tema
                 ),

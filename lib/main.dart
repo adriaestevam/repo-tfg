@@ -15,6 +15,8 @@ import 'package:tfg_v1/UI/Views/LoginSignup/SignupView.dart';
 import 'package:tfg_v1/UI/Views/home_page.dart';
 import 'Data/AuthRepository.dart';
 import 'Data/DataService.dart';
+import 'Domain/AddNewSubject/add_new_subject_bloc.dart';
+import 'UI/Views/Initial Configuration/addNewSubject.dart';
 
 
 void main() {
@@ -48,6 +50,11 @@ class MyApp extends StatelessWidget {
           ),
           BlocProvider<InitialConfigBloc>(
             create: (context) => InitialConfigBloc(
+              authRepository: RepositoryProvider.of<AuthRepository>(context),
+            ),
+          ),
+          BlocProvider<AddNewSubjectBloc>(
+            create: (context) => AddNewSubjectBloc(
               authRepository: RepositoryProvider.of<AuthRepository>(context),
             ),
           ),
