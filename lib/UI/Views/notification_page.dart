@@ -103,24 +103,6 @@ class _NotificationPageState extends State<NotificationPage> {
     // You can use ListView or other widgets to display events
     // Sample implementation:
     List<Event> events = [];
-    if (_selectedFolder == 'Inbox') {
-      events = [
-        Event('Math exam in 21 days', Icons.event),
-        Event('Chemistry test in 22 days', Icons.event),
-      ];
-    } else if (_selectedFolder == 'Archived') {
-      events = [
-        Event('Archived Event 1', Icons.archive),
-        Event('Archived Event 2', Icons.archive),
-      ];
-    } else { // Display all events
-      events = [
-        Event('Math exam in 21 days', Icons.event),
-        Event('Chemistry test in 22 days', Icons.event),
-        Event('Archived Event 1', Icons.archive),
-        Event('Archived Event 2', Icons.archive),
-      ];
-    }
 
     return ListView.builder(
       itemCount: events.length,

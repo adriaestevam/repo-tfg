@@ -32,6 +32,28 @@ class NavigatorBloc extends Bloc<NavigatorEvent, NaviState> {
         print("Error: $error");
       }
     });
+    on<GoToObjectivesEvent>((event, emit) async {
+      try {
+        emit(GoToObjectivesState());
+        print("Hola");
+      } catch (error) {
+        print("Error: $error");
+      }
+    });
+    on<GoToNotificationsEvent>((event, emit) async {
+      try {
+        emit(GoToNotificationsState());
+      } catch (error) {
+        print("Error: $error");
+      }
+    });
+    on<GoToSubjectsEvent>((event, emit) async {
+      try {
+        emit(GoToSubjectsState());
+      } catch (error) {
+        print("Error: $error");
+      }
+    });
   }
 }
 

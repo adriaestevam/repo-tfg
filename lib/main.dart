@@ -13,6 +13,7 @@ import 'package:tfg_v1/UI/Views/Initial%20Configuration/initial_configuration.da
 import 'package:tfg_v1/UI/Views/LoginSignup/LoginView.dart';
 import 'package:tfg_v1/UI/Views/LoginSignup/SignupView.dart';
 import 'package:tfg_v1/UI/Views/home_page.dart';
+import 'package:tfg_v1/UI/Views/objectives_page.dart';
 import 'Data/AuthRepository.dart';
 import 'Data/DataService.dart';
 import 'Domain/AddNewSubject/add_new_subject_bloc.dart';
@@ -74,10 +75,9 @@ class MyApp extends StatelessWidget {
               } else if(state is GoToHomeState){
                 return HomeScreen();
               }
-              return LoginScreen(); // Manejo de estado no definido
+              return SignUpScreen(); // Manejo de estado no definido
             },
           ),
-          routes: Routes.routes,
         ),
       ),
     );

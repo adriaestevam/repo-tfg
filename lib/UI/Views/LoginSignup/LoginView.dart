@@ -6,6 +6,7 @@ import 'package:tfg_v1/Domain/LoginBloc/login_state.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_event.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_state.dart';
+import 'package:tfg_v1/UI/Utilities/widgets.dart';
 
 
 
@@ -13,7 +14,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey.shade300,
       body: Center(
         child: SingleChildScrollView(
           child: LoginForm(),
@@ -51,48 +52,49 @@ class LoginForm extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Log In',
+                'Welcome back',
                 style: theme.textTheme.headline1,
               ),
+              Text(
+                'Good to see you again',
+                style: theme.textTheme.titleMedium ,
+              ),
               SizedBox(height: 20),
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: theme.primaryColor, width: 2.0),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: theme.colorScheme.secondary, width: 2.0),
-                  ),
+              myTransparentTextField(
+                controller: _emailController, 
+                keyboardType: TextInputType.emailAddress, 
+                obscureText: false, 
+                hintText: "Email", 
+                labelText: "Email"
+              ),
+              SizedBox(height: 20),
+              myTransparentTextField(
+                controller: _passwordController, 
+                obscureText: true, 
+                hintText: 'Password', 
+                labelText: 'Password', 
+                keyboardType: TextInputType.name
                 ),
-                keyboardType: TextInputType.emailAddress,
-              ),
               SizedBox(height: 20),
-              TextField(
-                controller: _passwordController,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: theme.primaryColor, width: 2.0),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: theme.colorScheme.secondary, width: 2.0),
-                  ),
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  minWidth: 200, // Minimum width
+                  maxWidth: 300, // Maximum width
                 ),
-                obscureText: true,
+                child: myGreenButton(
+                  onPressed: () {
+                    final email = _emailController.text;
+                    final password = _passwordController.text;
+                    loginBloc.add(LoginButtonPressed(email, password));
+                  },
+                  child: const Text(
+                    'Log In',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  decoration: BoxDecoration(),
+                ),
               ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  final email = _emailController.text;
-                  final password = _passwordController.text;
-                  loginBloc.add(LoginButtonPressed(email,password));
-                },
-                child: Text('Log In'),
-              ),
+              SizedBox(height: 40,),
               if (state is LoginLoading) CircularProgressIndicator(),
               if (state is LoginFailure) Text(
                 state.error,

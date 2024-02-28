@@ -12,7 +12,7 @@ class AppTheme {
     return ThemeData(
       primaryColor: primaryColor,
       hintColor: accentColor,
-      scaffoldBackgroundColor: Colors.white,
+      scaffoldBackgroundColor: Colors.grey.shade300,
       fontFamily: 'Roboto',
       textTheme: TextTheme(
         headline1: TextStyle(

@@ -1,23 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:tfg_v1/Domain/NavigatorBloc/navigator_event.dart';
+import 'package:tfg_v1/UI/Widgets/bottom_navigation_widget.dart';
 
-import '../../Domain/NavigatorBloc/navigator_event.dart';
-import '../Widgets/bottom_navigation_widget.dart';
+import '../../Domain/NavigatorBloc/navigator_bloc.dart';
 
-void main() => runApp(MyApp());
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Mi Calendario de Eventos',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: HomeScreen(),
-    );
-  }
-}
 
 class Event {
   final String name;
@@ -53,21 +41,25 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     // Assume AppTheme is defined somewhere in your application
     final appTheme = Theme.of(context);
+    final NavigatorBloc navigatorBloc = BlocProvider.of<NavigatorBloc>(context);
+    
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mi Horario'),
+        title: Text('Mi Horarwio'),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.person),
             onPressed: () {
               // Navigate to profile settings
+              navigatorBloc.add(GoToObjectivesEvent());
             },
           ),
           IconButton(
             icon: Icon(Icons.settings),
             onPressed: () {
               // Navigate to general settings
+              navigatorBloc.add(GoToLoginEvent());
             },
           ),
         ],
@@ -102,6 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title: Text(_events[index].name),
                   onTap: () {
                     // Handle the tap on an event
+                    
                   },
                 );
               },
@@ -114,7 +107,17 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: () {
           // Add logic to create a new event
         },
-      ), // Your custom bottom navigation bar
+      ),
+      /*bottomNavigationBar: CustomBottomNav(
+        onTabTapped: (index){
+          switch(index){
+            case 0: navigatorBloc.add(GoToHomeEvent());
+            case 1: navigatorBloc.add(GoToObjectivesEvent());
+            case 2: navigatorBloc.add(GoToNotificationsEvent());
+            case 3: navigatorBloc.add(GoToSubjectsEvent());
+          }
+        }
+      )*/ // Your custom bottom navigation bar
     );
   }
 }

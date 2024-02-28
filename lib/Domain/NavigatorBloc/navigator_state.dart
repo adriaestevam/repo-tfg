@@ -8,3 +8,6 @@ class GoToLoginState extends NaviState {}
 class GoToSignupState extends NaviState {}
 class GoToStartInitialConfigutationState extends NaviState{}
 class GoToHomeState extends NaviState{}
+class GoToObjectivesState extends NaviState{}
+class GoToNotificationsState extends NaviState{}
+class GoToSubjectsState extends NaviState{}

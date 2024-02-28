@@ -20,7 +20,7 @@ class DataService {
     String databasesPath = await getDatabasesPath();
     print(databasesPath);
     print("Inicialización de la base de datos"+databasesPath);
-    String path = join(databasesPath, 'app_database.db');
+    String path = join(databasesPath, 'my_database.db');
 
     return await openDatabase(path, version: 1, onCreate: (Database db, int version) async {
       // Crear tabla de Usuarios (ya existente)

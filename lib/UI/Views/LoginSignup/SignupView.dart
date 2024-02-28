@@ -5,12 +5,13 @@ import 'package:tfg_v1/Domain/SignUpBloc/sing_up_event.dart';
 import 'package:tfg_v1/Domain/SignUpBloc/sing_up_state.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_event.dart';
+import 'package:tfg_v1/UI/Utilities/widgets.dart';
 
 class SignUpScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Set the background to white
+      backgroundColor: backgroundColor, // Set the background to white
       body: Center(
         child: SingleChildScrollView(
           child: SignUpForm(),
@@ -47,51 +48,52 @@ class SignUpForm extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Create Account',
-                style: theme.textTheme.headline1, // Utilizando el estilo del tema
+                'Good To see you!',
+                style: theme.textTheme.headline1, 
+              ),
+              Text(
+                'Add your email and password',
+                style: theme.textTheme.titleMedium,
               ),
               SizedBox(height: 20),
               // Email field
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  labelText: 'Your Email',
-                  border: OutlineInputBorder(),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: theme.primaryColor, width: 2.0),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: theme.colorScheme.secondary, width: 2.0),
-                  ),
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
+              myTransparentTextField(
+                controller: emailController, 
+                obscureText: false, 
+                hintText: "Email", 
+                labelText: "Email", 
+                keyboardType: TextInputType.emailAddress
+              ),           
               SizedBox(height: 20),
               // Password field
-              TextField(
-                controller: passwordController,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: theme.primaryColor, width: 2.0),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: theme.colorScheme.secondary, width: 2.0),
-                  ),
-                ),
-                obscureText: true,
+              myTransparentTextField(
+                controller: passwordController, 
+                obscureText: true, 
+                hintText: "Password", 
+                labelText: "Password", 
+                keyboardType: TextInputType.text
               ),
               SizedBox(height: 40),
               // Sign Up button
-              ElevatedButton(
-                onPressed: () {
-                  final email = emailController.text;
-                  final password = passwordController.text;
-                  signUpBloc.add(SignUpButtonPressed(email: email, password: password));
-                },
-                child: Text('Sign Up'),
-                // El estilo del botón ya está definido en el tema
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  minWidth: 200,
+                  maxWidth: 300
+                ),
+                child: myGreenButton(
+                  onPressed: () {
+                    final email = emailController.text;
+                    final password = passwordController.text;
+                    signUpBloc.add(SignUpButtonPressed(email: email, password: password));
+                  },
+                  child: Text(
+                    'Sign Up',
+                    style: TextStyle(
+                      color: Colors.white
+                    ),
+                  ),
+                  decoration: BoxDecoration(),
+                ),
               ),
               SizedBox(height: 20),
               // Switch to Sign In

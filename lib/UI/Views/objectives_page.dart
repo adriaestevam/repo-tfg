@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
 import 'package:tfg_v1/UI/Utilities/app_colors.dart';
 import 'package:tfg_v1/UI/Views/notification_page.dart';
 import 'package:tfg_v1/UI/Views/subjects_page.dart';
@@ -9,6 +11,8 @@ class ObjectivesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+  final NavigatorBloc navigatorBloc = BlocProvider.of<NavigatorBloc>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Objectives'),
