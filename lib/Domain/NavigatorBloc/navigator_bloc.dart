@@ -27,6 +27,7 @@ class NavigatorBloc extends Bloc<NavigatorEvent, NaviState> {
     });
     on<GoToHomeEvent>((event, emit) async {
       try {
+        print("Im going home");
         emit(GoToHomeState());
       } catch (error) {
         print("Error: $error");

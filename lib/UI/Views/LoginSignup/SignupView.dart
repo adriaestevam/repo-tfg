@@ -48,7 +48,7 @@ class SignUpForm extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                'Good To see you!',
+                'Good to see you!',
                 style: theme.textTheme.headline1, 
               ),
               Text(
@@ -78,7 +78,7 @@ class SignUpForm extends StatelessWidget {
               ConstrainedBox(
                 constraints: BoxConstraints(
                   minWidth: 200,
-                  maxWidth: 300
+                  maxWidth: 300,
                 ),
                 child: myGreenButton(
                   onPressed: () {

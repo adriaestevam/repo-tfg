@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../../../Data/Models/subject.dart';
@@ -43,8 +45,9 @@ class _AddNewSubjectScreenState extends State<AddNewSubjectScreen> {
 
       // Create a new Subject instance
       Subject newSubject = Subject(
-        id: UniqueKey().toString(), // Generates a unique ID for the subject
+        id: Random().nextInt(1000), // Generates a unique ID for the subject
         name: _courseName,
+        universityId: Random().nextInt(1000),
         credits: _credits,
         formula: formula,
       );

@@ -56,7 +56,7 @@ class LoginForm extends StatelessWidget {
                 style: theme.textTheme.headline1,
               ),
               Text(
-                'Good to see you again',
+                'Good to see you again!',
                 style: theme.textTheme.titleMedium ,
               ),
               SizedBox(height: 20),

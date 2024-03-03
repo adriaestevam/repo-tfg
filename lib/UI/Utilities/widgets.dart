@@ -1,3 +1,4 @@
+import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
 
 final Color primaryColor = Color.fromARGB(255, 68, 157, 122); // Verde claro para elementos destacados
@@ -22,33 +23,38 @@ class myGreenButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: primaryColor,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color:Colors.grey.shade500,
-            offset: Offset(4,4),
-            blurRadius: 5,
-            spreadRadius: 1
+    return IntrinsicWidth(
+      child: IntrinsicHeight(
+        child: Container(
+          decoration: BoxDecoration(
+            color: primaryColor,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.shade500,
+                offset: Offset(4,4),
+                blurRadius: 5,
+                spreadRadius: 1
+              ),
+              BoxShadow(
+                color: Colors.white,
+                offset: Offset(-4,-4),
+                blurRadius: 5,
+                spreadRadius: 1
+              )
+            ]
           ),
-          BoxShadow(
-            color: Colors.white,
-            offset: Offset(-4,-4),
-            blurRadius: 5,
-            spreadRadius: 1
-          )
-        ]
-      ),
-      padding: padding,
-      child: TextButton(
-        onPressed: onPressed,
-        child: child,
+          padding: padding,
+          child: TextButton(
+            onPressed: onPressed,
+            child: child,
+          ),
+        ),
       ),
     );
   }
 }
+
 
 
 class myTransparentButton extends StatelessWidget {
@@ -145,4 +151,52 @@ class myTransparentTextField extends StatelessWidget {
     );
   }
 }
+
+
+class MyBottomBarIcon extends StatelessWidget {
+  final IconData iconData;
+  final double size;
+  final Color color;
+
+  MyBottomBarIcon({
+    required this.iconData,
+    this.size = 30.0, // Tamaño por defecto
+    this.color = Colors.black, // Color por defecto
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(
+        minHeight: 50,
+        minWidth: 50
+      ),
+      
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade500,
+            offset: Offset(2, 2),
+            blurRadius: 5,
+            spreadRadius: 1,
+          ),
+          BoxShadow(
+            color: Colors.white,
+            offset: Offset(-2, -2),
+            blurRadius: 5,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Icon(
+        iconData,
+        size: size,
+        color: color,
+      ),
+    );
+  }
+}
+
+
 

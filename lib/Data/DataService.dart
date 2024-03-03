@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:tfg_v1/Data/Models/StudyBloc.dart';
+import 'package:tfg_v1/Data/Models/User-Subject.dart';
+import 'package:tfg_v1/Data/Models/Users.dart';
 import 'package:tfg_v1/Data/Models/subject.dart';
+
+import 'Models/university.dart';
 
 class DataService {
   static Database? _database;
@@ -20,111 +25,157 @@ class DataService {
     String databasesPath = await getDatabasesPath();
     print(databasesPath);
     print("Inicialización de la base de datos"+databasesPath);
-    String path = join(databasesPath, 'my_database.db');
+    String path = join(databasesPath, 'v2.db');
 
     return await openDatabase(path, version: 1, onCreate: (Database db, int version) async {
       // Crear tabla de Usuarios (ya existente)
       await db.execute('''
-        CREATE TABLE Usuarios(
-          id INTEGER PRIMARY KEY, 
-          nombre TEXT, 
-          email TEXT, 
-          password TEXT
-        );
-        CREATE TABLE ConfiguracionInicial(
-          id INTEGER PRIMARY KEY, 
-          user_name TEXT, 
-          university TEXT
-        );
-        CREATE TABLE MateriasSeleccionadas(
-          id INTEGER PRIMARY KEY, 
-          user_id INTEGER, 
-          subject TEXT, 
-          selected BOOLEAN
-        );
-        CREATE TABLE Objetivos(
-          id INTEGER PRIMARY KEY, 
-          user_id INTEGER, 
-          objective TEXT, 
-          description TEXT
-        );
-        CREATE TABLE HorariosEstudio(
-          id INTEGER PRIMARY KEY, 
-          user_id INTEGER, 
-          day TEXT, 
-          startTime TEXT, 
-          endTime TEXT
-        );
-      '''
-      );
+        CREATE TABLE users(
+          id INTERGER PRIMARY KEY,
+          name TEXT,
+          email TEXT,
+          password TEXT,
+          universityId INTERGER,
+          FOREIGN KEY(universityId) REFERENCES university(id)
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE subjects(
+          id INTERGER PRIMARY KEY,
+          name TEXT,
+          credits INTERGER,
+          formula TEXT,
+          universityId INTERGER,
+          FOREIGN KEY(universityId) REFERENCES university(id)
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE university(
+          id INTEGER PRIMARY KEY,
+          name TEXT
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE study_block(
+          id INTEGER PRIMARY KEY,
+          userId INTEGER,
+          day TEXT,
+          startTime TEXT,
+          endTime TEXT,
+          FOREIGN KEY(userId) REFERENCES users(id)
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE event(
+          id INTEGER PRIMARY KEY,
+          name TEXT,
+          isDone INTEGER
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE session(
+          id INTEGER PRIMARY KEY,
+          startTime TEXT,
+          endTime TEXT,
+          FOREIGN KEY(id) REFERENCES event(id)
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE evaluation(
+          id INTEGER PRIMARY KEY,
+          date TEXT,
+          grade REAL,
+          FOREIGN KEY(id) REFERENCES event(id)
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE plan(
+          userId INTEGER,
+          subjectId INTEGER,
+          sessionId INTEGER,
+          PRIMARY KEY (userId, subjectId, sessionId),
+          FOREIGN KEY(userId) REFERENCES users(id),
+          FOREIGN KEY(subjectId) REFERENCES subjects(id),
+          FOREIGN KEY(sessionId) REFERENCES session(id)
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE user_subject(
+          userId INTEGER,
+          subjectId INTEGER,
+          objective INTEGER,
+          priority INTEGER,
+          feedback INTEGER,
+          PRIMARY KEY (userId, subjectId),
+          FOREIGN KEY(userId) REFERENCES users(id),
+          FOREIGN KEY(subjectId) REFERENCES subjects(id)
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE user_subject_event(
+          userId INTEGER,
+          subjectId INTEGER,
+          eventId INTEGER,
+          PRIMARY KEY (userId, subjectId, eventId),
+          FOREIGN KEY(userId) REFERENCES users(id),
+          FOREIGN KEY(subjectId) REFERENCES subjects(id),
+          FOREIGN KEY(eventId) REFERENCES events(id)
+        )
+      ''');
+
     });
   }
 
   // Obtener todos los usuarios
   Future<List<Map<String, dynamic>>> obtainUsers() async {
     final db = await database;
-    return await db.query('Usuarios');
+    return await db.query('users');
   }
 
   // Insertar un nuevo usuario
-  Future<void> insertUser(Map<String, dynamic> userInfo) async {
+  Future<void> insertUser(User user) async {
     final db = await database;
     await db.insert(
-      'Usuarios',
-      userInfo,
+      'users',
+      user.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
-
-
   }
 
-  Future<void> insertInitialConfiguration(Map<String, dynamic> configInfo) async {
+  Future<void> insertUniversity(University university) async {
+    final db = await database; // Asegúrate de que 'database' es tu instancia de la base de datos SQLite
+    await db.insert(
+      'university',
+      university.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> insertSubject(Subject subject) async {
     final db = await database;
-    await db.insert('ConfiguracionInicial', configInfo, conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert(
+      'subjects',
+      subject.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
-  Future<void> insertSelectedSubjects(int userId, Map<Subject, bool> selectedSubjects) async {
+  Future<void> insertStudyBlock(StudyBlock studyBlock) async {
     final db = await database;
-    for (var subject in selectedSubjects.entries) {
-      await db.insert('MateriasSeleccionadas', {
-        'user_id': userId,
-        'subject': subject.key,
-        'selected': subject.value ? 1 : 0 // SQLite no tiene boolean, así que usamos int
-      }, conflictAlgorithm: ConflictAlgorithm.replace);
-    }
-  }
-
-  Future<void> insertObjectives(int userId, Map<Subject, String> objectives) async {
-    final db = await database;
-    for (var objective in objectives.entries) {
-      await db.insert('Objetivos', {
-        'user_id': userId,
-        'objective': objective.key,
-        'description': objective.value
-      }, conflictAlgorithm: ConflictAlgorithm.replace);
-    }
-  }
-
-  Future<void> insertStudyBlocs(int userId, Map<String, TimeOfDay> studyStartTimes, Map<String, TimeOfDay> studyEndTimes) async {
-    final db = await database;
-
-    // Iterar sobre studyStartTimes y studyEndTimes y insertar en HorariosEstudio
-    studyStartTimes.forEach((day, startTime) async {
-      var endTime = studyEndTimes[day];
-      await db.insert('HorariosEstudio', {
-        'user_id': userId,
-        'day': day,
-        'startTime': _timeOfDayToString(startTime), // Conversión de TimeOfDay a String
-        'endTime': _timeOfDayToString(endTime!) // Conversión de TimeOfDay a String
-      });
-    });
-  }
-
-  // Método auxiliar para convertir TimeOfDay a String
-  String _timeOfDayToString(TimeOfDay time) {
-    final hour = time.hour.toString().padLeft(2, '0');
-    final minute = time.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
+    await db.insert(
+      'study_block',
+      studyBlock.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
 
@@ -132,7 +183,7 @@ class DataService {
     final db = await database;
 
     // Lista de los nombres de todas las tablas
-    List<String> tables = ['Usuarios'];
+    List<String> tables = ['users','subjects','user_subject','university','study_block'];
 
     for (String table in tables) {
       final List<Map<String, dynamic>> results = await db.query(table);
@@ -142,5 +193,77 @@ class DataService {
       }
     }
   }
+
+  Future<int?> getUniversityId(String universityName) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'university',
+      columns: ['id'],
+      where: 'name = ?',
+      whereArgs: [universityName],
+    );
+    if (maps.isNotEmpty) {
+      return maps.first['id'] as int;
+    }
+    return null;
+  }
+
+
+  Future<List<University>> obtainUniversities() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('university');
+    return List.generate(maps.length, (i) {
+      return University.fromMap(maps[i]);
+    });
+  }
+
+
+  Future<void> registerUniversity(University university) async {
+    final db = await database;
+    await db.insert(
+      'university',
+      university.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+
+  Future<void> registerSubject(Subject subject) async {
+    final db = await database;
+    await db.insert(
+      'subjects',
+      subject.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+
+  Future<void> registerUserSubject(UserSubject userSubject) async {
+    final db = await database;
+    await db.insert(
+      'user_subject',
+      userSubject.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+
+  Future<void> registerStudyBlock(StudyBlock studyBlock) async {
+    final db = await database;
+    await db.insert(
+      'study_block',
+      studyBlock.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> registerUser(User newuser) async {
+    final db = await database;
+    await db.insert(
+      'users', 
+      newuser.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
  
 }

@@ -16,3 +16,7 @@ class SignUpFailure extends SignUpState {
 }
 
 class SwipeToLoginState extends SignUpState {}
+
+class InitialConfigState extends SignUpState{}
+
+class DisplaySuggestions extends SignUpState{}

@@ -1,13 +1,17 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tfg_v1/Data/Models/subject.dart';
-import 'package:tfg_v1/Domain/Initial%20Configuration%20Bloc/initial_config_event.dart';
-import 'package:tfg_v1/Domain/Initial%20Configuration%20Bloc/initial_config_state.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_event.dart';
+import 'package:tfg_v1/Domain/SignUpBloc/sing_up_bloc.dart';
+import 'package:tfg_v1/Domain/SignUpBloc/sing_up_event.dart';
+import 'package:tfg_v1/Domain/SignUpBloc/sing_up_state.dart';
+import 'package:tfg_v1/UI/Utilities/AppTheme.dart';
+import 'package:tfg_v1/UI/Utilities/widgets.dart';
 import 'package:tfg_v1/UI/Views/Initial%20Configuration/addNewSubject.dart';
 
-import '../../../Domain/Initial Configuration Bloc/initial_config_bloc.dart';
 
 class InitialConfigurationScreen extends StatefulWidget {
   @override
@@ -22,24 +26,9 @@ class _InitialConfigurationScreenState
   final _nameController = TextEditingController();
   final _universityController = TextEditingController();
   List<Subject> subjects = [
-  Subject(
-    id: '1',
-    name: 'Math',
-    credits: 4,
-    formula: 'Math Formula',
-  ),
-  Subject(
-    id: '2',
-    name: 'Physics',
-    credits: 3,
-    formula: 'Physics Formula',
-  ),
-  Subject(
-    id: '3',
-    name: 'Chemistry',
-    credits: 4,
-    formula: 'Chemistry Formula',
-  ),
+    Subject(id: 1, universityId: Random().nextInt(1000), name: "Biology", credits: 2, formula: "formula de biology"),
+    Subject(id: 2, universityId: Random().nextInt(1000), name: "Chemistry", credits: 2, formula: "formula de chemistry"),
+    Subject(id: 3, universityId: Random().nextInt(1000),  name: "Physics", credits: 2, formula: "formula de physics"),
 ];
 // Example subjects
   Map<Subject, bool> selectedSubjects = {};
@@ -189,8 +178,7 @@ class _InitialConfigurationScreenState
           height: 80,
           child: CircularProgressIndicator(
             value: progressValue,
-            backgroundColor: theme.colorScheme
-                .background, // Usamos el color de fondo del tema para la barra de progreso
+            backgroundColor: backgroundColor,
             valueColor: AlwaysStoppedAnimation<Color>(
                 theme.colorScheme.primary), // Color primario para el progreso
             strokeWidth: 6,
@@ -202,8 +190,7 @@ class _InitialConfigurationScreenState
             // Asegúrate de que bodyText2 está definido en tu AppTheme
             fontSize: 12,
             fontWeight: FontWeight.bold,
-            color: theme.colorScheme
-                .onBackground, // Color de texto sobre fondo, para mejor contraste
+            color: secondaryTextColor, // Color de texto sobre fondo, para mejor contraste
           ),
         ),
       ],
@@ -230,6 +217,7 @@ class _InitialConfigurationScreenState
                   .secondary, // Utiliza el color secundario del esquema de colores del tema
             ),
           ),
+        SizedBox(height: 10,),
       ],
     );
   }
@@ -237,10 +225,10 @@ class _InitialConfigurationScreenState
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context); // Usamos el tema global
-    final InitialConfigBloc initialConfigBloc = BlocProvider.of<InitialConfigBloc>(context);
+    final SignUpBloc signUpBloc = BlocProvider.of<SignUpBloc>(context);
     final NavigatorBloc navigatorBloc = BlocProvider.of<NavigatorBloc>(context);
 
-    return BlocBuilder<InitialConfigBloc, InitialConfigState>(
+    return BlocBuilder<SignUpBloc, SignUpState>(
       builder: (context, state) {
         return MaterialApp(
           theme: theme, // Aplicamos el tema a MaterialApp
@@ -249,8 +237,7 @@ class _InitialConfigurationScreenState
               title: Text('Initial Configuration',
                   style: theme.textTheme
                       .headline6), // Usamos el estilo de texto del tema para el título
-              backgroundColor: theme.appBarTheme
-                  .backgroundColor, // Color de fondo del AppBar del tema
+              backgroundColor: backgroundColor, // Color de fondo del AppBar del tema
               elevation: 0,
             ),
             body: Column(
@@ -272,51 +259,67 @@ class _InitialConfigurationScreenState
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       if (_currentStep > 0)
-                        OutlinedButton(
-                          child: Text('Back', style: theme.textTheme.button),
-                          onPressed: () {
-                            setState(() {
-                              if (_currentStep > 0) _currentStep--;
-                            });
-                          },
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: theme.colorScheme.primary),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                        SizedBox(
+                          height: 45,
+                          width: 100,
+                          child: Container(
+                            decoration: myBoxDecoration(),
+                            child: TextButton(
+                              child: Text('Back', style: theme.textTheme.button),
+                              onPressed: () {
+                                setState(() {
+                                  if (_currentStep > 0) _currentStep--;
+                                });
+                              },
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(color: backgroundColor),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                backgroundColor: Colors.transparent, // Make the button background transparent
+                              ),
                             ),
                           ),
                         ),
-                      ElevatedButton(
-                        child: Text(
-                            _currentStep == _totalSteps - 1 ? 'Finish' : 'Next',
-                            style: theme.textTheme.button
-                                ?.copyWith(color: Colors.white)),
-                        onPressed: () {
-                          if (_currentStep < _totalSteps - 1) {
-                            setState(() {
-                              _currentStep++;
-                            });
-                          } else {
-                            initialConfigBloc.add(EndOfInitialConfiguration(
-                              user_name: _nameController.text,
-                              university: _universityController.text,
-                              selectedSubjects: selectedSubjects,
-                              objectives: objectives,
-                              studyStartTimes: studyStartTimes,
-                              studyEndTimes:  studyEndTimes
-                            ));
-                            navigatorBloc.add(GoToHomeEvent());
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          primary: theme.colorScheme.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                      SizedBox(
+                        height:45 ,
+                        width: 100 ,
+                        child: Container(
+                          decoration: myBoxDecoration(),
+                          child: ElevatedButton(
+                            child: Text(
+                              _currentStep == _totalSteps - 1 ? 'Finish' : 'Next',
+                              style: theme.textTheme.button?.copyWith(color: Colors.white),
+                            ),
+                            onPressed: () {
+                              if (_currentStep < _totalSteps - 1) {
+                                setState(() {
+                                  _currentStep++;
+                                });
+                              } else {
+                                
+                                signUpBloc.add(EndOfInitialConfiguration(
+                                  user_name: _nameController.text, 
+                                  university: _universityController.text, 
+                                  selectedSubjects: selectedSubjects, 
+                                  objectives: objectives, 
+                                  studyStartTimes: studyStartTimes, 
+                                  studyEndTimes: studyEndTimes)
+                                );
+                                navigatorBloc.add(GoToHomeEvent());
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              primary: theme.colorScheme.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                            ),
                           ),
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 32, vertical: 12),
                         ),
-                      ),
+                      )
+                      
                     ],
                   ),
                 ),
@@ -332,15 +335,33 @@ class _InitialConfigurationScreenState
     ThemeData theme = Theme.of(context); // Obtenemos el tema actual
 
     return Container(
+      width: 350,
       padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color:Colors.grey.shade500,
+            offset: Offset(4,4),
+            blurRadius: 5,
+            spreadRadius: 1
+          ),
+          BoxShadow(
+            color: Colors.white,
+            offset: Offset(-4,-4),
+            blurRadius: 5,
+            spreadRadius: 1
+          )
+        ]
+      ),
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        elevation: 4,
-        color: theme.cardColor, // Usa el color de tarjeta definido en el tema
+        elevation: 0, // Set elevation to 0 as shadow is handled by the container
+        color: backgroundColor,
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: _getStepContent(
-              _currentStep), // Asegúrate de que este método también use el tema
+          padding: const EdgeInsets.all(12.0),
+          child: _getStepContent(_currentStep),
         ),
       ),
     );
@@ -396,20 +417,23 @@ class _InitialConfigurationScreenState
             ],
           ),
         ),
-        TextFormField(
+        Container(
+          decoration: myBoxDecoration(),
+          child: TextFormField(
           controller: _nameController,
           decoration: InputDecoration(
             labelText: 'Your name',
             labelStyle: theme.textTheme.caption?.copyWith(
                 color: theme
                     .colorScheme.secondary), // Usa el estilo de texto del tema
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
             prefixIcon: Icon(Icons.person,
                 color: theme
                     .colorScheme.secondary), // Usa el color secundario del tema
           ),
+        ),
         ),
       ],
     );
@@ -443,23 +467,24 @@ class _InitialConfigurationScreenState
             ],
           ),
         ),
-        TextFormField(
-          controller: _universityController,
-          decoration: InputDecoration(
-            labelText: 'University name',
-            labelStyle: theme.textTheme.caption?.copyWith(
-                color: theme
-                    .colorScheme.secondary), // Usa el estilo de texto del tema
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+        Container(
+          decoration: myBoxDecoration(),
+          child: TextFormField(
+            controller: _universityController,
+            decoration: InputDecoration(
+              labelText: 'University name',
+              labelStyle: theme.textTheme.caption?.copyWith(
+                  color: theme.colorScheme.secondary), // Usa el estilo de texto del tema
+              border: InputBorder.none, // Elimina el borde en todos los estados
+              enabledBorder: InputBorder.none, // Elimina el borde cuando el campo está habilitado
+              focusedBorder: InputBorder.none, // Elimina el borde cuando el campo está enfocado
+              prefixIcon: Icon(
+                Icons.search,
+                color: theme.colorScheme.secondary, // Usa el color secundario del tema
+              ),
             ),
-            prefixIcon: Icon(
-              Icons.search,
-              color: theme
-                  .colorScheme.secondary, // Usa el color secundario del tema
-            ),
-          ),
-        ),
+          )
+         ),        
       ],
     );
   }
@@ -648,8 +673,7 @@ class _InitialConfigurationScreenState
                         .onSurface, // Ajusta el color del texto según el estado del chip
                 fontWeight: FontWeight.bold,
               ),
-              backgroundColor: theme.colorScheme
-                  .surface, // Usa el color de superficie del tema para el fondo
+              backgroundColor: backgroundColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
@@ -735,4 +759,6 @@ class _InitialConfigurationScreenState
       },
     );
   }
+  
+  
 }

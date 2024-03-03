@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+
 class BottomNavBarState extends ChangeNotifier {
   int _selectedIndex = 0;
 

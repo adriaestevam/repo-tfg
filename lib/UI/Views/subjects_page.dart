@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
 import 'package:tfg_v1/UI/Utilities/app_colors.dart';
 import 'package:tfg_v1/UI/Views/notification_page.dart';
 import 'package:tfg_v1/UI/Views/objectives_page.dart';
 import 'package:tfg_v1/UI/Widgets/bottom_navigation_widget.dart';
 
-class SubjectPage extends StatelessWidget {
-  const SubjectPage({super.key});
+import '../../Domain/NavigatorBloc/navigator_event.dart';
+import '../Utilities/widgets.dart';
+
+class SubjectsScreen extends StatelessWidget {
+  const SubjectsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final NavigatorBloc navigatorBloc = BlocProvider.of<NavigatorBloc>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Subjects'),
@@ -28,25 +35,67 @@ class SubjectPage extends StatelessWidget {
           },
         ),
       ),
-      bottomNavigationBar: CustomBottomNav(
-        onTabTapped: (index) {
-          switch(index){
-            case 0:
-              break;
-            case 1:
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const ObjectivesPage()));
-              break;
-            case 2:
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const NotificationPage()));
-              break;
-            case 3:
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const SubjectPage()));
-              break;
-            default:
-              break; 
-          }
-        },
-      ),
+      bottomNavigationBar: SizedBox(
+        height: 100,
+        child: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          items: [
+            BottomNavigationBarItem(
+              icon: MyBottomBarIcon(
+                iconData: Icons.home, // El ícono que quieres usar
+                size: 30, // Tamaño personalizado
+                color: accentColor, // Color personalizado
+              ), // Tamaño más grande para el ícono
+              label: 'Home',
+              backgroundColor: backgroundColor,
+            ),
+            BottomNavigationBarItem(
+              icon: MyBottomBarIcon(
+                iconData: Icons.star, // El ícono que quieres usar
+                size: 30, // Tamaño personalizado
+                color: primaryColor, // Color personalizado
+              ), 
+              label: 'Objetivos',
+              backgroundColor: backgroundColor,
+            ),
+            BottomNavigationBarItem(
+              icon: MyBottomBarIcon(
+                iconData: Icons.notifications, // El ícono que quieres usar
+                size: 30, // Tamaño personalizado
+                color: accentColor, // Color personalizado
+              ),  // Ícono para 'Notificaciones'
+              label: 'Notificaciones',
+              backgroundColor: backgroundColor,
+            ),
+            BottomNavigationBarItem(
+              icon: MyBottomBarIcon(
+                iconData: Icons.school, // El ícono que quieres usar
+                size: 30, // Tamaño personalizado
+                color: accentColor, // Color personalizado
+              ),  // Ícono para 'Asignaturas Universitarias'
+              label: 'Asignaturas',
+              backgroundColor: backgroundColor,
+            ),
+          ],
+          selectedFontSize: 12, // Ajusta el tamaño del texto cuando está seleccionado
+          unselectedFontSize: 12, // Ajusta el tamaño del texto cuando no está seleccionado
+          iconSize: 30, 
+          backgroundColor: backgroundColor,// Tamaño general de los íconos
+          // ... otras propiedades como currentIndex, onTap, etc
+          onTap: (index) {
+            switch(index){
+              case 0: navigatorBloc.add(GoToHomeEvent());
+                break;
+              case 1: navigatorBloc.add(GoToObjectivesEvent());
+                break;
+              case 2: navigatorBloc.add(GoToNotificationsEvent());
+                break;
+              case 3: navigatorBloc.add(GoToSubjectsEvent());
+            }
+          },
+          currentIndex: 1, // Índice del botón actualmente seleccionado
+        ),
+      )
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_v1/UI/Utilities/widgets.dart';
 
 class AppTheme {
   static ThemeData getAppTheme() {
@@ -86,4 +87,25 @@ class AppTheme {
       ),
     );
   }
+}
+
+myBoxDecoration() {
+  return BoxDecoration(
+    color: backgroundColor,
+    borderRadius: BorderRadius.circular(12),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.grey.shade500,
+        offset: Offset(4,4),
+        blurRadius: 5,
+        spreadRadius: 1
+      ),
+      BoxShadow(
+        color: Colors.white,
+        offset: Offset(-4,-4),
+        blurRadius: 5,
+        spreadRadius: 1
+      )
+    ]
+  );       
 }

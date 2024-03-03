@@ -1,6 +1,12 @@
+import 'dart:math';
+
 import 'package:flutter/src/material/time.dart';
 import 'package:meta/meta.dart';
+import 'package:tfg_v1/Data/Models/StudyBloc.dart';
+import 'package:tfg_v1/Data/Models/User-Subject.dart';
+import 'package:tfg_v1/Data/Models/Users.dart';
 import 'package:tfg_v1/Data/Models/subject.dart';
+import 'package:tfg_v1/Data/Models/university.dart';
 import 'DataService.dart';
 
 class AuthRepository {
@@ -42,14 +48,14 @@ class AuthRepository {
   }
 
   // Método para registrar un usuario
-  Future<bool> registerUser(String email, String password) async {
+  Future<bool> registerUser(User newuser) async {
     await _dataService.printEverything();
 
     var users = await _dataService.obtainUsers();
-    var emailExists = users.any((user) => user['email'] == email);
+    var emailExists = users.any((user) => user['email'] == newuser.email);
 
     if (!emailExists) {
-      await _dataService.insertUser({'email': email, 'password': password});
+      _dataService.registerUser(newuser);
       return true;
     } else {
       return false;
@@ -76,31 +82,36 @@ class AuthRepository {
   //Initial Configuration
 
   //Request
-  Future<void> registerInitialConfig(String user_name, String university, Map<Subject, bool> selectedSubjects, Map<Subject, String> objectives, Map<String, TimeOfDay> studyStartTimes, Map<String, TimeOfDay> studyEndTimes) async {
-    await _dataService.printEverything();
+ 
 
-    //Suponiendo que obtenemos el ID del usuario actual de alguna manera
-    int userId = 100; // Obtener el ID del usuario
+  getUniversityID(String university) {
+    return _dataService.getUniversityId(university);
+  }
 
-    // Insertar en ConfiguracionInicial
-    await _dataService.insertInitialConfiguration({user_name: user_name, university: university});
+  checkIfUniversityRegistered(String university) async {
+    var universities = await _dataService.obtainUniversities();
+    var universityIsRegistered = universities.any((university) => university == university.name);
+    if(universityIsRegistered){return true;} else {return false;}
+  }
 
-    // Iterar sobre selectedSubjects y insertar en MateriasSeleccionadas
-    // Insert Selected Subjects
-    selectedSubjects.forEach((subject, selected) async {
-      await _dataService.insertSelectedSubjects(userId,selectedSubjects);
-    });
+  registerUniversity(University university) {
+    _dataService.registerUniversity(university);
 
-    // Insert Objectives
-    objectives.forEach((objective, description) async {
-      await _dataService.insertObjectives(userId, objectives);
-    });
+  }
 
-    // Insert Study Blocs
-    studyStartTimes.forEach((day, startTime) async {
-      var endTime = studyEndTimes[day];
-      await _dataService.insertStudyBlocs(userId,studyStartTimes,studyEndTimes);
-    });
+  registerSubject(Subject subject) {
+    _dataService.registerSubject(subject);
+  }
+
+  registerUserSubject(UserSubject userSubject) {
+    _dataService.registerUserSubject(userSubject);
+  }
+
+  registerStudyBlock(StudyBlock studyBlock) {
+    _dataService.registerStudyBlock(studyBlock);
+    print("registerstudyblock");
+    _dataService.printEverything();
 
   }
 }
+
