@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../../Data/Models/subject.dart';
+import 'package:tfg_v1/Data/Models/Subject.dart';
 
 class FormulaElement {
   String name;

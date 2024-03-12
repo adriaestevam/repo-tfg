@@ -65,6 +65,18 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
         print(error.toString());
       }
     });  
+    
+    on<SubjectsRecieved>((event, emit) async {   
+    
+    try{
+      emit(SubjectsAlreadyUploadedState());
+
+    }catch(error){
+      print(error);
+    }
+
+    
+    }); 
 
     on<EndOfInitialConfiguration>((event, emit) async {   
       print("end of initial config");

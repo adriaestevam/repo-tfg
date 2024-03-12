@@ -34,3 +34,5 @@ class UniversityIsIntroduced extends SignUpEvent{
 
   UniversityIsIntroduced({required this.university});
 }
+
+class SubjectsRecieved extends SignUpEvent{}

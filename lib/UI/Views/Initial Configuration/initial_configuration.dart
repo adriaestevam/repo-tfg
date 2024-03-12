@@ -32,6 +32,9 @@ class _InitialConfigurationScreenState
   Map<String, TimeOfDay> studyStartTimes = {};
   Map<String, TimeOfDay> studyEndTimes = {};
   int _activeDayStep = 0; // Para manejar el día activo en el Stepper
+   Subject? _selectedSubject;
+  late List<Subject> _selectedSubjectList = [];
+  bool areSubjectsUploaded = false;
 
   List<Step> _buildStudySteps() {
     ThemeData theme = Theme.of(context); // Obtenemos el tema actual
@@ -118,6 +121,7 @@ class _InitialConfigurationScreenState
 
   void initState() {
     super.initState();
+    _selectedSubjectList = [];
     var daysOfWeek = [
       'Monday',
       'Tuesday',
@@ -227,10 +231,17 @@ class _InitialConfigurationScreenState
     return BlocBuilder<SignUpBloc, SignUpState>(
       builder: (context, state) {
         if(state is SubjectsFromUniversityState){
-          subjects = state.subjectsFromUniversity;
-        } else {
-          subjects.clear();
-        }
+
+          if(!areSubjectsUploaded){
+            subjects = state.subjectsFromUniversity;
+            areSubjectsUploaded = true;
+          } else {
+            print("subjects han sido uploaded");          
+          }
+
+          
+          
+        } 
         return MaterialApp(
           theme: theme, // Aplicamos el tema a MaterialApp
           home: Scaffold(
@@ -369,26 +380,28 @@ class _InitialConfigurationScreenState
   }
 
   Widget _getStepContent(int stepIndex) {
-    final SignUpBloc signUpBloc = BlocProvider.of<SignUpBloc>(context);    switch (stepIndex) {
-    case 0:
-      return _buildNameStep(context);
-    case 1:
-      return _buildUniversityStep(context);
-    case 2:
-      signUpBloc.add(UniversityIsIntroduced(university: _universityController.text));
-      return _buildSubjectsStep(context);
+    final SignUpBloc signUpBloc = BlocProvider.of<SignUpBloc>(context);    
+    switch (stepIndex) {
+      case 0:
+        return _buildNameStep(context);
+      case 1:
+        return _buildUniversityStep(context);
+      case 2:
+        print("estoy en el case 2");
+        signUpBloc.add(UniversityIsIntroduced(university: _universityController.text));
+        return _buildSubjectsStep(context);
 
-    case 3:
-      return _buildPrioritiesStep(context);
-    case 4:
-      return _buildObjectivesStep(context);
-    case 5:
-      return _buildStudyBlockStep(context);
-    default:
-      return Center(
-          child: Text(
-        'Unknown step',
-      ));
+      case 3:
+        return _buildPrioritiesStep(context);
+      case 4:
+        return _buildObjectivesStep(context);
+      case 5:
+        return _buildStudyBlockStep(context);
+      default:
+        return Center(
+            child: Text(
+          'Unknown step',
+        ));
     }
   }
 
@@ -472,6 +485,9 @@ class _InitialConfigurationScreenState
         Container(
           decoration: myBoxDecoration(),
           child: TextFormField(
+            onChanged: (text){
+              areSubjectsUploaded = false;
+            },
             controller: _universityController,
             decoration: InputDecoration(
               labelText: 'University name',
@@ -561,8 +577,12 @@ class _InitialConfigurationScreenState
 
                 if (result is Subject){
                   setState(() {
+                    print("nuevo subject");
+                    print(result.name);
                     subjects.add(result as Subject);
                   });
+                }{
+                  print("no hay nuevo subject");
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -585,6 +605,8 @@ class _InitialConfigurationScreenState
     List<Subject> selectedSubjectList = subjects
         .where((subject) => selectedSubjects[subject] ?? false)
         .toList();
+
+    int selectedIndex = -1;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -612,41 +634,65 @@ class _InitialConfigurationScreenState
           ),
         ),
         Expanded(
-          child: ReorderableListView(
-            onReorder: (int oldIndex, int newIndex) {
-              if (newIndex > oldIndex) {
-                newIndex -= 1;
-              }
-              setState(() {
-                final Subject item = selectedSubjectList.removeAt(oldIndex);
-                selectedSubjectList.insert(newIndex, item);
-              });
-            },
-            children: selectedSubjectList
-                .asMap()
-                .map((index, subject) => MapEntry(
-                      index,
-                      ListTile(
-                        key: ValueKey('$subject-$index'),
-                        title: Text(
-                          subject.name,
-                          style: theme.textTheme
-                              .bodyText1, // Usa el estilo de texto del tema
-                        ),
-                        leading: Icon(
-                          Icons.drag_handle,
-                          color: theme.colorScheme
-                              .secondary, // Usa el color secundario del tema
-                        ),
+          child: ListView.builder(
+            itemCount: selectedSubjectList.length,
+            itemBuilder: (context, index) {
+              final subject = selectedSubjectList[index];
+              return Column(
+                children: [
+                  ListTile(
+                    title: Text(subject.name),
+                    tileColor:
+                        index == selectedIndex ? Colors.green : null,
+                    onTap: () {
+                      setState(() {
+                        selectedIndex = index;
+                      });
+                    },
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.arrow_upward),
+                        onPressed: () {
+                          if (selectedIndex > 0) {
+                            setState(() {
+                              final temp = selectedSubjectList[selectedIndex];
+                              selectedSubjectList[selectedIndex] =
+                                  selectedSubjectList[selectedIndex - 1];
+                              selectedSubjectList[selectedIndex - 1] = temp;
+                              selectedIndex -= 1;
+                            });
+                          }
+                        },
                       ),
-                    ))
-                .values
-                .toList(),
+                      IconButton(
+                        icon: Icon(Icons.arrow_downward),
+                        onPressed: () {
+                          if (selectedIndex < selectedSubjectList.length - 1) {
+                            setState(() {
+                              final temp = selectedSubjectList[selectedIndex];
+                              selectedSubjectList[selectedIndex] =
+                                  selectedSubjectList[selectedIndex + 1];
+                              selectedSubjectList[selectedIndex + 1] = temp;
+                              selectedIndex += 1;
+                            });
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ],
     );
   }
+
+
 
 
 

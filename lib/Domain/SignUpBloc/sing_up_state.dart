@@ -27,4 +27,6 @@ class SubjectsFromUniversityState extends SignUpState{
   SubjectsFromUniversityState({required this.subjectsFromUniversity});
 }
 
+class SubjectsAlreadyUploadedState extends SignUpState{}
+
 class FirstTimeUniversity extends SignUpState{}
