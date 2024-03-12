@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_v1/UI/Views/LoginSignup/LoginView.dart';
 import 'package:tfg_v1/UI/Views/LoginSignup/SignupView.dart';
-import 'package:tfg_v1/UI/Views/home_page.dart';
+import 'package:tfg_v1/UI/Views/Home/home_page.dart';
 
 class Routes {
   static const String login = '/login';

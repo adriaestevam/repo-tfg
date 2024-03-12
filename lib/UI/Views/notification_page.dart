@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
 import 'package:tfg_v1/UI/Utilities/app_colors.dart';
-import 'package:tfg_v1/UI/Views/home_page.dart';
+import 'package:tfg_v1/UI/Views/Home/home_page.dart';
 import 'package:tfg_v1/UI/Views/objectives_page.dart';
 import 'package:tfg_v1/UI/Views/subjects_page.dart';
-import 'package:tfg_v1/UI/Widgets/bottom_navigation_widget.dart';
 
 import '../../Domain/NavigatorBloc/navigator_event.dart';
 import '../Utilities/widgets.dart';
@@ -28,8 +27,23 @@ class NotificationsScreenState extends State<NotificationsScreen> {
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
-        backgroundColor: AppColors.primary,
+        backgroundColor: backgroundColor,
+        title: Text("Calendar"),
+        centerTitle: true,
+        leading: IconButton(
+          icon: Icon(Icons.account_circle),
+          onPressed: () {
+            // Lógica para la acción del icono de perfil
+          },
+        ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () {
+              // Lógica para la acción del icono de configuración
+            },
+          ),
+        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -56,7 +70,7 @@ class NotificationsScreenState extends State<NotificationsScreen> {
               icon: MyBottomBarIcon(
                 iconData: Icons.star, // El ícono que quieres usar
                 size: 30, // Tamaño personalizado
-                color: primaryColor, // Color personalizado
+                color: accentColor, // Color personalizado
               ), 
               label: 'Objetivos',
               backgroundColor: backgroundColor,
@@ -65,7 +79,7 @@ class NotificationsScreenState extends State<NotificationsScreen> {
               icon: MyBottomBarIcon(
                 iconData: Icons.notifications, // El ícono que quieres usar
                 size: 30, // Tamaño personalizado
-                color: accentColor, // Color personalizado
+                color: primaryColor, // Color personalizado
               ),  // Ícono para 'Notificaciones'
               label: 'Notificaciones',
               backgroundColor: backgroundColor,
@@ -96,7 +110,7 @@ class NotificationsScreenState extends State<NotificationsScreen> {
               case 3: navigatorBloc.add(GoToSubjectsEvent());
             }
           },
-          currentIndex: 1, // Índice del botón actualmente seleccionado
+          currentIndex: 2, // Índice del botón actualmente seleccionado
         ),
       )
     );
@@ -128,16 +142,16 @@ class NotificationsScreenState extends State<NotificationsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         margin: const EdgeInsets.all(8),
-        color: isSelected ? AppColors.primary : AppColors.background,
+        color: isSelected ? primaryColor : backgroundColor,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: isSelected ? Colors.white : AppColors.text),
+            Icon(icon, color: isSelected ? Colors.white : secondaryTextColor),
             const SizedBox(width: 8),
             Text(
               folderName,
               style: TextStyle(
-                color: isSelected ? Colors.white : AppColors.text,
+                color: isSelected ? Colors.white : secondaryTextColor,
                 fontWeight: FontWeight.bold,
               ),
             ),

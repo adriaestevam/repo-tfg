@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tfg_v1/Data/Models/subject.dart';
+import 'package:tfg_v1/Data/Models/Subject.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_event.dart';
 import 'package:tfg_v1/Domain/SignUpBloc/sing_up_bloc.dart';
@@ -25,11 +25,7 @@ class _InitialConfigurationScreenState
   final int _totalSteps = 6;
   final _nameController = TextEditingController();
   final _universityController = TextEditingController();
-  List<Subject> subjects = [
-    Subject(id: 1, universityId: Random().nextInt(1000), name: "Biology", credits: 2, formula: "formula de biology"),
-    Subject(id: 2, universityId: Random().nextInt(1000), name: "Chemistry", credits: 2, formula: "formula de chemistry"),
-    Subject(id: 3, universityId: Random().nextInt(1000),  name: "Physics", credits: 2, formula: "formula de physics"),
-];
+  List<Subject> subjects = [];
 // Example subjects
   Map<Subject, bool> selectedSubjects = {};
   Map<Subject, String> objectives = {}; // Almacena 'Pass', 'Honors' o 'None'
@@ -230,6 +226,11 @@ class _InitialConfigurationScreenState
 
     return BlocBuilder<SignUpBloc, SignUpState>(
       builder: (context, state) {
+        if(state is SubjectsFromUniversityState){
+          subjects = state.subjectsFromUniversity;
+        } else {
+          subjects.clear();
+        }
         return MaterialApp(
           theme: theme, // Aplicamos el tema a MaterialApp
           home: Scaffold(
@@ -368,25 +369,26 @@ class _InitialConfigurationScreenState
   }
 
   Widget _getStepContent(int stepIndex) {
-    switch (stepIndex) {
-      case 0:
-        return _buildNameStep(context);
-      case 1:
-        return _buildUniversityStep(context);
-      case 2:
-        return _buildSubjectsStep(context);
+    final SignUpBloc signUpBloc = BlocProvider.of<SignUpBloc>(context);    switch (stepIndex) {
+    case 0:
+      return _buildNameStep(context);
+    case 1:
+      return _buildUniversityStep(context);
+    case 2:
+      signUpBloc.add(UniversityIsIntroduced(university: _universityController.text));
+      return _buildSubjectsStep(context);
 
-      case 3:
-        return _buildPrioritiesStep(context);
-      case 4:
-        return _buildObjectivesStep(context);
-      case 5:
-        return _buildStudyBlockStep(context);
-      default:
-        return Center(
-            child: Text(
-          'Unknown step',
-        ));
+    case 3:
+      return _buildPrioritiesStep(context);
+    case 4:
+      return _buildObjectivesStep(context);
+    case 5:
+      return _buildStudyBlockStep(context);
+    default:
+      return Center(
+          child: Text(
+        'Unknown step',
+      ));
     }
   }
 
@@ -546,28 +548,31 @@ class _InitialConfigurationScreenState
         ),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: ElevatedButton.icon(
-            icon: Icon(Icons.add, color: Colors.white),
-            label: Text('Add Subject', style: TextStyle(color: Colors.white)),
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AddNewSubjectScreen()),
-              );
+          child: Container(
+            decoration: myBoxDecoration(),
+            child:  ElevatedButton.icon(
+              icon: Icon(Icons.add, color: accentColor),
+              label: Text('Add Subject', style: TextStyle(color: accentColor)),
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AddNewSubjectScreen()),
+                );
 
-              if (result is Subject){
-                setState(() {
-                  subjects.add(result as Subject);
-                });
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              primary: theme.colorScheme.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                if (result is Subject){
+                  setState(() {
+                    subjects.add(result as Subject);
+                  });
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                primary: backgroundColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
-            ),
-          ),
+            ), 
+          )
         ),
       ],
     );
@@ -643,12 +648,15 @@ class _InitialConfigurationScreenState
     );
   }
 
+
+
+
   Widget _buildObjectiveOptions(Subject subject, BuildContext context) {
     ThemeData theme = Theme.of(context); // Obtenemos el tema actual
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: <String>['Pass', 'Honors', 'None'].map((String value) {
+      children: <String>['Pass', 'Honors'].map((String value) {
         bool isSelected = objectives[subject] == value;
         return Expanded(
           child: Container(
@@ -690,7 +698,12 @@ class _InitialConfigurationScreenState
   }
 
   Widget _buildObjectivesStep(BuildContext context) {
-    ThemeData theme = Theme.of(context); // Obtenemos el tema actual
+    ThemeData theme = Theme.of(context); // Obtén el tema actual
+
+    // Filtrar y crear una lista de las materias seleccionadas
+    List<Subject> selectedSubjectList = subjects
+        .where((subject) => selectedSubjects[subject] ?? false)
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -707,15 +720,14 @@ class _InitialConfigurationScreenState
         ),
         Expanded(
           child: ListView.builder(
-            itemCount: subjects.length,
+            itemCount: selectedSubjectList.length, // Usa la lista filtrada
             itemBuilder: (context, index) {
               return ListTile(
                 title: Text(
-                  subjects[index].name,
-                  style: theme
-                      .textTheme.bodyText1, // Usa el estilo de texto del tema
+                  selectedSubjectList[index].name,
+                  style: theme.textTheme.bodyText1, // Usa el estilo de texto del tema
                 ),
-                subtitle: _buildObjectiveOptions(subjects[index], context),
+                subtitle: _buildObjectiveOptions(selectedSubjectList[index], context),
               );
             },
           ),
@@ -723,6 +735,7 @@ class _InitialConfigurationScreenState
       ],
     );
   }
+
 
   Widget _buildStudyBlockStep(BuildContext context) {
     ThemeData theme = Theme.of(context); // Obtenemos el tema actual

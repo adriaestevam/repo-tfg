@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
-import 'package:tfg_v1/Data/Models/subject.dart';
+import 'package:tfg_v1/Data/Models/Subject.dart';
 
 @immutable
 abstract class SignUpEvent {}
@@ -29,4 +29,8 @@ class EndOfInitialConfiguration extends SignUpEvent{
     required this.studyEndTimes
   });
 }
-class UniversityIsIntroduced extends SignUpEvent{}
+class UniversityIsIntroduced extends SignUpEvent{
+  final String university;
+
+  UniversityIsIntroduced({required this.university});
+}

@@ -73,7 +73,7 @@ class SignUpForm extends StatelessWidget {
                 labelText: "Password", 
                 keyboardType: TextInputType.text
               ),
-              SizedBox(height: 40),
+              SizedBox(height: 30),
               // Sign Up button
               ConstrainedBox(
                 constraints: BoxConstraints(
@@ -93,6 +93,8 @@ class SignUpForm extends StatelessWidget {
                     ),
                   ),
                   decoration: BoxDecoration(),
+                  height: 50,
+                  width: 50 ,
                 ),
               ),
               SizedBox(height: 20),

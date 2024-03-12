@@ -5,9 +5,9 @@ import 'package:meta/meta.dart';
 import 'package:tfg_v1/Data/Models/StudyBloc.dart';
 import 'package:tfg_v1/Data/Models/User-Subject.dart';
 import 'package:tfg_v1/Data/Models/Users.dart';
-import 'package:tfg_v1/Data/Models/subject.dart';
-import 'package:tfg_v1/Data/Models/university.dart';
-import 'DataService.dart';
+import 'package:tfg_v1/Data/Models/Subject.dart';
+import 'package:tfg_v1/Data/Models/University.dart';
+import '../DataService.dart';
 
 class AuthRepository {
   final DataService _dataService;
@@ -112,6 +112,14 @@ class AuthRepository {
     print("registerstudyblock");
     _dataService.printEverything();
 
+  }
+
+  getSubjectsByUniversity(String university) {
+    return _dataService.getSubjectsByUniversity(university);
+  }
+
+  getUserId(String email, String password) {
+    return _dataService.getUserId(email,password);
   }
 }
 

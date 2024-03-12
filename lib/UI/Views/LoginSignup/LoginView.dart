@@ -43,6 +43,9 @@ class LoginForm extends StatelessWidget {
     return BlocBuilder<LoginBloc, LoginState>(
       builder: (context, state) {
         if (state is LoginSucess) {
+          _emailController.clear();
+          _passwordController.clear();
+          loginBloc.add(setLoginInitial());
           navigatorBloc.add(GoToHomeEvent());
         }
 
@@ -92,6 +95,8 @@ class LoginForm extends StatelessWidget {
                     style: TextStyle(color: Colors.white),
                   ),
                   decoration: BoxDecoration(),
+                  height: 50,
+                  width: 50 ,
                 ),
               ),
               SizedBox(height: 40,),

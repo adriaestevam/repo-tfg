@@ -1,5 +1,6 @@
 import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
+import 'package:meta/meta.dart';
 
 final Color primaryColor = Color.fromARGB(255, 68, 157, 122); // Verde claro para elementos destacados
 final Color accentColor = Color.fromARGB(255, 63, 67, 63); // Gris claro para acentos y fondos
@@ -13,11 +14,15 @@ class myGreenButton extends StatelessWidget {
   final Widget child;
   final BoxDecoration decoration;
   final EdgeInsetsGeometry padding;
+  final double height;
+  final double width;
 
   myGreenButton({
     required this.onPressed,
     required this.child,
     required this.decoration,
+    required this.height,
+    required this.width,
     this.padding = const EdgeInsets.all(8.0),
   });
 
@@ -49,6 +54,8 @@ class myGreenButton extends StatelessWidget {
             onPressed: onPressed,
             child: child,
           ),
+          height: height,
+          width: width,
         ),
       ),
     );
@@ -62,11 +69,15 @@ class myTransparentButton extends StatelessWidget {
   final Widget child;
   final BoxDecoration decoration;
   final EdgeInsetsGeometry padding;
+  final double height;
+  final double width;
 
   myTransparentButton({
     required this.onPressed,
     required this.child,
     required this.decoration,
+    required this.height,
+    required this.width,
     this.padding = const EdgeInsets.all(8.0),
   });
 
@@ -96,6 +107,8 @@ class myTransparentButton extends StatelessWidget {
         onPressed: onPressed,
         child: child,
       ),
+      height: height,
+      width: width,
     );
   }
 }
@@ -197,6 +210,94 @@ class MyBottomBarIcon extends StatelessWidget {
     );
   }
 }
+
+
+class mySwitch extends StatefulWidget {
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+
+  const mySwitch({
+    Key? key,
+    required this.value,
+    required this.onChanged,
+  }) : super(key: key);
+
+  @override
+  _NeumorphicSwitchState createState() => _NeumorphicSwitchState();
+}
+
+class _NeumorphicSwitchState extends State<mySwitch> {
+  @override
+  Widget build(BuildContext context) {
+    final Color containerColor = widget.value ? primaryColor:backgroundColor;
+    final Color switchColor = widget.value ? backgroundColor : primaryColor;
+
+    return GestureDetector(
+      onTap: () {
+        widget.onChanged?.call(!widget.value);
+      },
+      child: Container(
+        width: 60.0,
+        height: 30.0,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20.0),
+          color: containerColor,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey[500]!,
+              offset: Offset(4.0, 4.0),
+              blurRadius: 8.0,
+              spreadRadius: 1.0,
+            ),
+            BoxShadow(
+              color: Colors.white,
+              offset: Offset(-4.0, -4.0),
+              blurRadius: 8.0,
+              spreadRadius: 1.0,
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            AnimatedPositioned(
+              duration: Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              left: widget.value ? 30.0 : 0.0,
+              child: Container(
+                width: 30.0,
+                height: 30.0,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: switchColor,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey[500]!,
+                      offset: Offset(4.0, 4.0),
+                      blurRadius: 8.0,
+                      spreadRadius: 1.0,
+                    ),
+                    BoxShadow(
+                      color: Colors.white,
+                      offset: Offset(-4.0, -4.0),
+                      blurRadius: 8.0,
+                      spreadRadius: 1.0,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+
+
+
+
 
 
 

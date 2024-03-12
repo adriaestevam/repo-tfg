@@ -2,20 +2,21 @@ import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tfg_v1/Data/Models/StudyBloc.dart';
 import 'package:tfg_v1/Data/Models/User-Subject.dart';
 import 'package:tfg_v1/Data/Models/Users.dart';
-import 'package:tfg_v1/Data/Models/subject.dart';
-import 'package:tfg_v1/Data/Models/university.dart';
+import 'package:tfg_v1/Data/Models/Subject.dart';
+import 'package:tfg_v1/Data/Models/University.dart';
 import 'package:tfg_v1/Domain/SignUpBloc/sing_up_event.dart';
 import 'package:tfg_v1/Domain/SignUpBloc/sing_up_state.dart';
-import '../../Data/AuthRepository.dart'; 
+import '../../Data/Repositories/AuthRepository.dart'; 
 
 
 class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
   String email = '';
   String password = ''; 
-
+  final Future<SharedPreferences> prefs = SharedPreferences.getInstance();
   SignUpBloc({required AuthRepository authRepository}) : super(SignUpInitial()) {
     
 
@@ -46,6 +47,22 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
       } catch (error) {
         // If an exception occurs during the sign-up process, emit a failure state
         emit(SignUpFailure(error: error.toString()));
+      }
+    }); 
+
+    on<UniversityIsIntroduced>((event, emit) async {   
+      List<Subject> subjects = [];
+      try {
+       if(!await authRepository.checkIfUniversityRegistered(event.university)){
+        subjects = await authRepository.getSubjectsByUniversity(event.university);
+        emit(SubjectsFromUniversityState(subjectsFromUniversity: subjects));
+       } else {
+        emit(FirstTimeUniversity());
+       }
+
+      } catch (error) {
+        // If an exception occurs during the sign-up process, emit a failure state
+        print(error.toString());
       }
     });  
 
@@ -92,14 +109,23 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
           ));
         });
 
-        // Save subjects and relate them to user and university
         Map<Subject, bool> selectedSubjects = event.selectedSubjects;
         Map<Subject, String> objectives = event.objectives;
+       
 
-        selectedSubjects.forEach((subject, isSelected) async {
+        // Utiliza un bucle for-in en lugar de forEach para poder esperar las llamadas asincrónicas
+        for (var entry in selectedSubjects.entries) {
+          var subject = entry.key;
+          var isSelected = entry.value;
+
           if (isSelected) {
-            subjectId = Random().nextInt(1000);
+            print('Subject ${subject.name} is selected.');
 
+            // Generate a random subject ID
+            subjectId = Random().nextInt(1000);
+            print('Generated subject ID: $subjectId');
+
+            // Register the subject
             await authRepository.registerSubject(Subject(
               id: subjectId,
               universityId: universityId,
@@ -107,10 +133,23 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
               credits: subject.credits,
               formula: subject.formula,
             ));
+            print('Registered subject: ${Subject(
+              id: subjectId,
+              universityId: universityId,
+              name: subject.name,
+              credits: subject.credits,
+              formula: subject.formula,
+            )}');
 
+            // Retrieve the objective for the subject
             String objective = objectives[subject]!;
-            priority++;
+            print('Retrieved objective: $objective');
 
+            // Increment priority
+            priority++;
+            print('Incremented priority to: $priority');
+
+            // Register the user subject
             await authRepository.registerUserSubject(UserSubject(
               userId: userId, 
               subjectId: subjectId, 
@@ -118,7 +157,15 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
               priority: priority, 
               feedback: 3,
             ));
+            print('Registered user subject with subjectId: $subjectId');
+          } else {
+            print('Subject ${subject.name} is not selected.');
           }
+        }
+
+
+        prefs.then((SharedPreferences preferences) {
+          preferences.setInt("currentUserId", userId);
         });
 
         emit(SignUpSuccess());

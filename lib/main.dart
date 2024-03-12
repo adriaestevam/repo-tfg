@@ -7,18 +7,22 @@ import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_event.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_state.dart';
 import 'package:tfg_v1/Domain/SignUpBloc/sing_up_bloc.dart';
+import 'package:tfg_v1/Domain/SubjectBloc/subject_bloc.dart';
+import 'package:tfg_v1/Domain/UserBloc/user_bloc.dart';
 import 'package:tfg_v1/UI/Utilities/AppTheme.dart';
 import 'package:tfg_v1/UI/Utilities/Routes.dart';
 import 'package:tfg_v1/UI/Utilities/bottom_nav_bar_state.dart';
+import 'package:tfg_v1/UI/Views/Home/addNewEventScreen.dart';
 import 'package:tfg_v1/UI/Views/Initial%20Configuration/initial_configuration.dart';
 import 'package:tfg_v1/UI/Views/LoginSignup/LoginView.dart';
 import 'package:tfg_v1/UI/Views/LoginSignup/SignupView.dart';
-import 'package:tfg_v1/UI/Views/home_page.dart';
+import 'package:tfg_v1/UI/Views/Home/home_page.dart';
 import 'package:tfg_v1/UI/Views/notification_page.dart';
 import 'package:tfg_v1/UI/Views/objectives_page.dart';
 import 'package:tfg_v1/UI/Views/subjects_page.dart';
-import 'Data/AuthRepository.dart';
+import 'Data/Repositories/AuthRepository.dart';
 import 'Data/DataService.dart';
+import 'Data/Repositories/UserRepository.dart';
 import 'UI/Views/Initial Configuration/addNewSubject.dart';
 
 
@@ -27,12 +31,16 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  
   @override
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider<AuthRepository>(
           create: (context) => AuthRepository(DataService()),
+        ),
+        RepositoryProvider<UserRepository>(
+          create: (context) => UserRepository(DataService()),
         ),
         // Agrega más RepositoryProviders según sea necesario
       ],
@@ -50,7 +58,17 @@ class MyApp extends StatelessWidget {
             create: (context) => LoginBloc(
               authRepository: RepositoryProvider.of<AuthRepository>(context),
             ),
-          ),          
+          ),   
+          BlocProvider<UserBloc>(
+            create: (context) => UserBloc(
+              userRepository: RepositoryProvider.of<UserRepository>(context),
+            ),
+          ),  
+          BlocProvider<SubjectBloc>(
+            create: (context) => SubjectBloc(
+              userRepository: RepositoryProvider.of<UserRepository>(context),
+            ),
+          ),       
           // Agrega más BlocProviders si es necesario
         ],
         child: ChangeNotifierProvider<BottomNavBarState>(
