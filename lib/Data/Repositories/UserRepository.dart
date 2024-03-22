@@ -1,4 +1,6 @@
 import 'dart:math';
+import 'package:tfg_v1/Data/Models/Users.dart';
+
 import '../DataService.dart';
 
 
@@ -27,16 +29,8 @@ class UserRepository {
     return _dataService.objectivesAndPrioritiesByUserId(id);
   }
 
-  void editusername(String name) {
-    _dataService.editUserName(name);
-  }
-
-  void editEmail(String email) {
-    _dataService.editEmail(email);
-  }
-
-  void editPassword(String password) {
-    _dataService.editPassword(password);
+  void updateUserFromProfileSettings(User user, String currentName, String currentMail, String currentPassword) {
+    _dataService.updateUserFromProfileSettings(user,currentName,currentMail,currentPassword);
   }
 }
 

@@ -22,3 +22,7 @@ class displayInformation extends UserState{
   });
 
 }
+
+class userSuccessfullyUpdated extends UserState{}
+class UpdatingUserInformation extends UserState{}
+

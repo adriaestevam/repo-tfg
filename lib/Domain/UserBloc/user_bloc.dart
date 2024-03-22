@@ -40,23 +40,19 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         String currentMail = event.currentMail;
         String currentPassword = event.currentPassword;
 
-        if (user.name != currentName && currentName != '') {
+        emit(UpdatingUserInformation());
+
+        if (user.name != currentName && currentName != '' ||
+            user.email != currentMail && currentMail != '' ||
+            user.password != currentPassword && currentPassword != ''
+          ) {
           print('name is different');
-          userRepository.editusername(currentName);
-          await Future.delayed(Duration(seconds: 1)); // Delay for 1 second
+          userRepository.updateUserFromProfileSettings(user,currentName,currentMail,currentPassword);
         }
 
-        if (user.email != currentMail && currentMail != '') {
-          print('email is different');
-          userRepository.editEmail(currentMail);
-          await Future.delayed(Duration(seconds: 1)); // Delay for 1 second
-        }
+      
 
-        if (user.password != currentPassword && currentPassword != '') {
-          print('password is different');
-          userRepository.editPassword(currentPassword);
-          await Future.delayed(Duration(seconds: 1)); // Delay for 1 second
-        }
+        emit(userSuccessfullyUpdated());
 
 
       }catch(error){

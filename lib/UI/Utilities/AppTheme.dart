@@ -110,6 +110,27 @@ myBoxDecoration() {
   );       
 }
 
+eventMarkerDecoration() {
+  return BoxDecoration(
+    color: backgroundColor,
+    borderRadius: BorderRadius.circular(12),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.grey.shade500,
+        offset: Offset(2,2),
+        blurRadius: 3,
+        spreadRadius: 1
+      ),
+      BoxShadow(
+        color: Colors.white,
+        offset: Offset(-2,-2),
+        blurRadius: 3,
+        spreadRadius: 1
+      )
+    ]
+  );       
+}
+
 myCircularDecoration() {
   return BoxDecoration(
     color: backgroundColor,

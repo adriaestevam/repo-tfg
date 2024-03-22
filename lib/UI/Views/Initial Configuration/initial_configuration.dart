@@ -19,8 +19,7 @@ class InitialConfigurationScreen extends StatefulWidget {
       _InitialConfigurationScreenState();
 }
 
-class _InitialConfigurationScreenState
-    extends State<InitialConfigurationScreen> {
+class _InitialConfigurationScreenState extends State<InitialConfigurationScreen> {
   int _currentStep = 0;
   final int _totalSteps = 6;
   final _nameController = TextEditingController();
@@ -32,9 +31,10 @@ class _InitialConfigurationScreenState
   Map<String, TimeOfDay> studyStartTimes = {};
   Map<String, TimeOfDay> studyEndTimes = {};
   int _activeDayStep = 0; // Para manejar el día activo en el Stepper
-   Subject? _selectedSubject;
-  late List<Subject> _selectedSubjectList = [];
+  Subject? _selectedSubject;
   bool areSubjectsUploaded = false;
+  List<Subject> selectedSubjectList = [];
+  bool selectedSubjectStepPassed = false;
 
   List<Step> _buildStudySteps() {
     ThemeData theme = Theme.of(context); // Obtenemos el tema actual
@@ -121,7 +121,6 @@ class _InitialConfigurationScreenState
 
   void initState() {
     super.initState();
-    _selectedSubjectList = [];
     var daysOfWeek = [
       'Monday',
       'Tuesday',
@@ -235,11 +234,7 @@ class _InitialConfigurationScreenState
           if(!areSubjectsUploaded){
             subjects = state.subjectsFromUniversity;
             areSubjectsUploaded = true;
-          } else {
-            print("subjects han sido uploaded");          
-          }
-
-          
+          }          
           
         } 
         return MaterialApp(
@@ -392,6 +387,9 @@ class _InitialConfigurationScreenState
         return _buildSubjectsStep(context);
 
       case 3:
+        print('Estas son las prioridades');
+        print('hola');
+       
         return _buildPrioritiesStep(context);
       case 4:
         return _buildObjectivesStep(context);
@@ -598,99 +596,80 @@ class _InitialConfigurationScreenState
     );
   }
 
-  Widget _buildPrioritiesStep(BuildContext context) {
-    ThemeData theme = Theme.of(context); // Obtenemos el tema actual
+ Widget _buildPrioritiesStep(BuildContext context) {
+  ThemeData theme = Theme.of(context); // Obtén el tema actual
+  
+  if(!selectedSubjectStepPassed){
+    selectedSubjectList = subjects
+      .where((subject) => selectedSubjects[subject] ?? false)
+      .toList();
+      selectedSubjectStepPassed = true;
+  }
+  
 
-    // Filtrar y crear una lista de las materias seleccionadas
-    List<Subject> selectedSubjectList = subjects
-        .where((subject) => selectedSubjects[subject] ?? false)
-        .toList();
-
-    int selectedIndex = -1;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Row(
-            children: [
-              Icon(
-                Icons.sort,
-                color:
-                    theme.colorScheme.primary, // Usa el color primario del tema
-              ),
-              SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Sort your subjects by importance for you',
-                  style: theme.textTheme.subtitle1?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    // El color ya está definido en el estilo del tema
-                  ),
-                ),
-              ),
-            ],
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Text(
+          'Set priorities for each subject',
+          style: theme.textTheme.subtitle1?.copyWith(
+            fontWeight: FontWeight.bold,
+            // El color ya está definido en el estilo del tema
           ),
         ),
-        Expanded(
-          child: ListView.builder(
-            itemCount: selectedSubjectList.length,
-            itemBuilder: (context, index) {
-              final subject = selectedSubjectList[index];
-              return Column(
+      ),
+      Expanded(
+        child: ListView.builder(
+          itemCount: selectedSubjectList.length, // Usa la lista filtrada
+          itemBuilder: (context, index) {
+            final subject = selectedSubjectList[index];
+            return ListTile(
+              title: Text(
+                subject.name,
+                style: theme.textTheme.bodyText1, // Usa el estilo de texto del tema
+              ),
+              subtitle: Row(
                 children: [
-                  ListTile(
-                    title: Text(subject.name),
-                    tileColor:
-                        index == selectedIndex ? Colors.green : null,
-                    onTap: () {
+                  Text(
+                    'Priority: ${selectedSubjectList.indexOf(subject) + 1}',
+                    style: theme.textTheme.caption,
+                  ),
+                  SizedBox(width: 20),
+                  IconButton(
+                    icon: Icon(Icons.arrow_upward),
+                    onPressed: () {
                       setState(() {
-                        selectedIndex = index;
+                        if (index > 0) {
+                          final temp = selectedSubjectList[index];
+                          selectedSubjectList[index] = selectedSubjectList[index - 1];
+                          selectedSubjectList[index - 1] = temp;
+                        }
                       });
                     },
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.arrow_upward),
-                        onPressed: () {
-                          if (selectedIndex > 0) {
-                            setState(() {
-                              final temp = selectedSubjectList[selectedIndex];
-                              selectedSubjectList[selectedIndex] =
-                                  selectedSubjectList[selectedIndex - 1];
-                              selectedSubjectList[selectedIndex - 1] = temp;
-                              selectedIndex -= 1;
-                            });
-                          }
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.arrow_downward),
-                        onPressed: () {
-                          if (selectedIndex < selectedSubjectList.length - 1) {
-                            setState(() {
-                              final temp = selectedSubjectList[selectedIndex];
-                              selectedSubjectList[selectedIndex] =
-                                  selectedSubjectList[selectedIndex + 1];
-                              selectedSubjectList[selectedIndex + 1] = temp;
-                              selectedIndex += 1;
-                            });
-                          }
-                        },
-                      ),
-                    ],
+                  IconButton(
+                    icon: Icon(Icons.arrow_downward),
+                    onPressed: () {
+                      setState(() {
+                        if (index < selectedSubjectList.length - 1) {
+                          final temp = selectedSubjectList[index];
+                          selectedSubjectList[index] = selectedSubjectList[index + 1];
+                          selectedSubjectList[index + 1] = temp;
+                        }
+                      });
+                    },
                   ),
                 ],
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
 
 
 

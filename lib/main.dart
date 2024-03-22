@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:tfg_v1/Data/DataService.dart';
+import 'package:tfg_v1/Data/Repositories/EventRepository.dart';
+import 'package:tfg_v1/Domain/CalendarBloc/calendar_bloc.dart';
 import 'package:tfg_v1/Domain/LoginBloc/login_bloc.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_event.dart';
@@ -42,6 +44,9 @@ class MyApp extends StatelessWidget {
         RepositoryProvider<UserRepository>(
           create: (context) => UserRepository(DataService()),
         ),
+        RepositoryProvider<EventRepository>(
+          create: (context) => EventRepository(DataService()),
+        ),
         // Agrega más RepositoryProviders según sea necesario
       ],
       child: MultiBlocProvider(
@@ -67,6 +72,11 @@ class MyApp extends StatelessWidget {
           BlocProvider<SubjectBloc>(
             create: (context) => SubjectBloc(
               userRepository: RepositoryProvider.of<UserRepository>(context),
+            ),
+          ), 
+          BlocProvider<CalendarBloc>(
+            create: (context) => CalendarBloc(
+              eventRepository: RepositoryProvider.of<EventRepository>(context),
             ),
           ),       
           // Agrega más BlocProviders si es necesario

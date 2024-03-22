@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:tfg_v1/Data/Models/Evaluation.dart';
+import 'package:tfg_v1/Data/Models/Event.dart';
+import 'package:tfg_v1/Data/Models/User-Subject-Event.dart';
 import 'package:tfg_v1/Data/Models/User-Subject.dart';
 
 import 'package:tfg_v1/Data/Models/StudyBloc.dart';
@@ -426,51 +429,162 @@ class DataService {
     });
   }
 
-  Future<void> editUserName(String name) async {
-    print('Editing user name: $name');
+
+
+
+ 
+  Future<void> updateUserFromProfileSettings(User user, String currentName, String currentMail, String currentPassword) async {
     final db = await database;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     int? userId = prefs.getInt("currentUserId");
-    // Actualizar el nombre de usuario en la base de datos
-    await db.update(
-      'users',
-      {'name': name},
-      where: 'id = ?',
-      whereArgs: [userId],
-    );
-    print('User name updated successfully $userId');
+
+    Map<String, dynamic> updatedFields = {};
+
+    // Verificar si el nombre es diferente y no está vacío
+    if (user.name != currentName && currentName.isNotEmpty) {
+      print('Changing user name from ${user.name} to $currentName');
+      updatedFields['name'] = currentName;
+    }
+
+    // Verificar si el correo electrónico es diferente y no está vacío
+    if (user.email != currentMail && currentMail.isNotEmpty) {
+      print('Changing user email from ${user.email} to $currentMail');
+      updatedFields['email'] = currentMail;
+    }
+
+    // Verificar si la contraseña es diferente y no está vacía
+    if (user.password != currentPassword && currentPassword.isNotEmpty) {
+      print('Changing user password');
+      updatedFields['password'] = currentPassword;
+    }
+
+    // Actualizar los campos en la base de datos si hay cambios
+    if (updatedFields.isNotEmpty) {
+      await db.update(
+        'users',
+        updatedFields,
+        where: 'id = ?',
+        whereArgs: [userId],
+      );
+      print('User updated successfully');
+    } else {
+      print('No changes detected');
+    }
   }
 
-  Future<void> editEmail(String email) async {
-    print('Editing user email: $email');
+  Future<void> addNewEvaluation(Evaluation evaluation, Event event, UserSubjectEvent userSubjectEvent) async {
     final db = await database;
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    int? userId = prefs.getInt("currentUserId");
-    // Actualizar el correo electrónico del usuario en la base de datos
-    await db.update(
-      'users',
-      {'email': email},
-      where: 'id = ?',
-      whereArgs: [userId],
-    );
-    print('User email updated successfully  $userId');
+    
+    // Insertar evento
+    await db.insert('event', event.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+
+    // Insertar evaluación
+    await db.insert('evaluation', evaluation.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+
+    // Insertar UserSubjectEvent
+    await db.insert('user_subject_event', userSubjectEvent.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<void> editPassword(String password) async {
-    print('Editing user password');
+
+  Future<List<Event>> uploadEvents() async {
     final db = await database;
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     int? userId = prefs.getInt("currentUserId");
-    // Actualizar la contraseña del usuario en la base de datos
-    await db.update(
-      'users',
-      {'password': password},
-      where: 'id = ?',
+
+    List<Event> userEvents = [];
+
+    if (userId == null) {
+      print('No current user ID found');
+      return userEvents;
+    }
+
+    // Obtener todos los UserSubjectEvent que corresponden al usuario
+    final List<Map<String, dynamic>> userSubjectEventMaps = await db.query(
+      'user_subject_event',
+      where: 'userId = ?',
       whereArgs: [userId],
     );
-    print('User password updated successfully  $userId');
+
+    // Convertir los mapas a objetos UserSubjectEvent
+    List<UserSubjectEvent> userSubjectEvents = userSubjectEventMaps.map((map) => UserSubjectEvent.fromMap(map)).toList();
+
+    // Para cada UserSubjectEvent, obtener el detalle del evento
+    for (UserSubjectEvent userSubjectEvent in userSubjectEvents) {
+      final List<Map<String, dynamic>> eventMaps = await db.query(
+        'event',
+        where: 'id = ?',
+        whereArgs: [userSubjectEvent.eventId],
+      );
+
+      if (eventMaps.isNotEmpty) {
+        userEvents.add(Event.fromMap(eventMaps.first));
+      }
+    }
+
+    return userEvents;
+  }
+              
+
+
+
+  Future<List<Evaluation>> uploadEvaluations() async {
+    final db = await database;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    int? userId = prefs.getInt("currentUserId");
+
+    List<Evaluation> userEvaluations = [];
+
+    if (userId == null) {
+      print('No current user ID found');
+      return userEvaluations;
+    }
+
+    // Obtener todos los UserSubjectEvent que corresponden al usuario
+    final List<Map<String, dynamic>> userSubjectEvents = await db.query(
+      'user_subject_event',
+      where: 'userId = ?',
+      whereArgs: [userId],
+    );
+
+    // Para cada UserSubjectEvent, obtener el detalle de la evaluación
+    for (var userSubjectEventMap in userSubjectEvents) {
+      final eventId = userSubjectEventMap['eventId'] as int;
+      final List<Map<String, dynamic>> evaluationMaps = await db.query(
+        'evaluation',
+        where: 'id = ?',
+        whereArgs: [eventId],
+      );
+
+      // Procesar las evaluaciones obtenidas
+      for (var evaluationMap in evaluationMaps) {
+        // Suponiendo que la clase Evaluation tiene un constructor fromMap
+        Evaluation evaluation = Evaluation.fromMap(evaluationMap);
+        userEvaluations.add(evaluation);
+      }
+    }
+    return userEvaluations; 
+  }
+
+  Future<bool> checkUserHasEvents() async {
+    final db = await database;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    int? userId = prefs.getInt("currentUserId");
+
+    if (userId == null) {
+      print('No current user ID found');
+      return false;
+    }
+
+    // Comprobar si existen eventos asociados con el usuario
+    final List<Map<String, dynamic>> userSubjectEvents = await db.query(
+      'user_subject_event',
+      where: 'userId = ?',
+      whereArgs: [userId],
+    );
+
+    // Si la lista no está vacía, significa que hay eventos asociados con el usuario
+    return userSubjectEvents.isNotEmpty;
   }
 
 }
-
 
