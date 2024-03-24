@@ -206,6 +206,15 @@ class SubjectDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<Map<String, String>> formulaElements = subject.formula.split(', ')
+      .map((e) {
+        var parts = e.split(': ');
+        return {
+          'name': parts[0],
+          'weight': parts[1]
+        };
+      }).toList();
+      
     return Scaffold(
       appBar: AppBar(
         title: Text(subject.name),
@@ -268,16 +277,29 @@ class SubjectDetailsPage extends StatelessWidget {
                     title: Text('Nombre'),
                     subtitle: Text(subject.name),
                   ),
-                  ListTile(
-                    leading: Icon(Icons.account_balance_wallet),
-                    title: Text('Créditos'),
-                    subtitle: Text('${subject.credits}'),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.calculate),
-                    title: Text('Fórmula'),
-                    subtitle: Text(subject.formula),
-                  ),
+                  Text('Fórmula', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Table(
+                    columnWidths: const{
+                      0:FlexColumnWidth(3),
+                      1: FlexColumnWidth(2),
+                    },
+                    border: TableBorder.all(),
+                    children: [
+                      for (var element in formulaElements)
+                        TableRow(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(element['name'] ?? ''),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(element['weight'] ?? ''),
+                            ),
+                          ]
+                        )
+                    ]
+                  )  
                 ],
               ),
             ),
