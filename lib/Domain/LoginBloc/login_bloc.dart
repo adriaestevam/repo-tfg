@@ -13,7 +13,7 @@ final Future<SharedPreferences> prefs = SharedPreferences.getInstance();
       emit(LoginLoading());
       try {        
         // Register user using a request to the auth repo.
-        print("hola");
+       
           bool userFound = await authRepository.lookForUser(event.email, event.password);
 
           if (userFound) {

@@ -49,7 +49,6 @@ class AuthRepository {
 
   // Método para registrar un usuario
   Future<bool> registerUser(User newuser) async {
-    await _dataService.printEverything();
 
     var users = await _dataService.obtainUsers();
     var emailExists = users.any((user) => user['email'] == newuser.email);
@@ -109,9 +108,6 @@ class AuthRepository {
 
   registerStudyBlock(StudyBlock studyBlock) {
     _dataService.registerStudyBlock(studyBlock);
-    print("registerstudyblock");
-    _dataService.printEverything();
-
   }
 
   getSubjectsByUniversity(String university) {

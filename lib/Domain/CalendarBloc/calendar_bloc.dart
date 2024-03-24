@@ -4,6 +4,7 @@ import 'package:tfg_v1/Data/Models/Evaluation.dart';
 import 'package:tfg_v1/Data/Models/Event.dart';
 import 'package:tfg_v1/Data/Models/User-Subject-Event.dart';
 
+import '../../Data/Models/Session.dart';
 import '../../Data/Repositories/EventRepository.dart';
 
 part 'calendar_event.dart';
@@ -14,8 +15,13 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
     on<addNewEvaluation>((event, emit) async {
       try{
         await eventRepository.addNewEvaluation(event.newEvaluation, event.newEvent, event.newUserSubjectEvent);
-        
-        
+      } catch(error){
+        print(error);
+      }
+    });
+    on<addNewSession>((event, emit) async {
+      try{
+        await eventRepository.addNewSession(event.newSession, event.newEvent, event.newUserSubjectEvent);
       } catch(error){
         print(error);
       }
@@ -32,15 +38,17 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
       Map<DateTime, List<Event>> mapOfEvents = {};
       List<Event> userEvents = [];
       List<Evaluation> userEvaluations = [];
-
+      List<Session> userSessions = [];
       try {
         if(await eventRepository.checkUserHasEvents()){
           userEvents = await eventRepository.uploadEvents();
           userEvaluations = await eventRepository.uploadEvaluations();
+          userSessions = await eventRepository.uploadSession();
 
           // Create a map of evaluations by their ID for quick lookup
           Map<int, Evaluation> evaluationMap = { for (var e in userEvaluations) e.id: e };
-
+          Map<int, Session> sessionMap = { for (var s in userSessions) s.id: s };
+     
           // Add Events to selectedEvents based on their corresponding evaluation date
           for (Event event in userEvents) {
             if (evaluationMap.containsKey(event.id)) {
@@ -53,11 +61,22 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
                 mapOfEvents[evaluationDate] = [];
               }
               mapOfEvents[evaluationDate]!.add(event);
+
+            } else if (sessionMap.containsKey(event.id)){
+              Session session = sessionMap[event.id]!;
+              DateTime startTimeOfSession = session.startTime; //Considering stratTime as a reference for Mapping in the MapOfEvents
+
+              if(!mapOfEvents.containsKey(startTimeOfSession)){
+                mapOfEvents[startTimeOfSession]=[];
+              }
+
+              mapOfEvents[startTimeOfSession]!.add(event);
+             
             }
           }
         }
         
-        emit(uploadEventsToUI(mapOfEvents: mapOfEvents,evaluationList: userEvaluations));
+        emit(uploadEventsToUI(mapOfEvents: mapOfEvents,evaluationList: userEvaluations,sessionList: userSessions));
 
       } catch (error) {
         print(error);

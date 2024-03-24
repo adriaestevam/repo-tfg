@@ -382,13 +382,12 @@ class _InitialConfigurationScreenState extends State<InitialConfigurationScreen>
       case 1:
         return _buildUniversityStep(context);
       case 2:
-        print("estoy en el case 2");
+     
         signUpBloc.add(UniversityIsIntroduced(university: _universityController.text));
         return _buildSubjectsStep(context);
 
       case 3:
-        print('Estas son las prioridades');
-        print('hola');
+      
        
         return _buildPrioritiesStep(context);
       case 4:
@@ -575,12 +574,9 @@ class _InitialConfigurationScreenState extends State<InitialConfigurationScreen>
 
                 if (result is Subject){
                   setState(() {
-                    print("nuevo subject");
-                    print(result.name);
+                
                     subjects.add(result as Subject);
                   });
-                }{
-                  print("no hay nuevo subject");
                 }
               },
               style: ElevatedButton.styleFrom(

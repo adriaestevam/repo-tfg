@@ -322,13 +322,7 @@ class EditProfileScreen extends StatelessWidget {
                     Expanded(
                       child: myGreenButton(
                         onPressed:  () {
-                          // Debugging: Imprimir los valores de las variables actuales
-                          print('Current Name: $currentName');
-                          print('Initial Name: $initialName');
-                          print('Current Mail: $currentMail');
-                          print('Initial Mail: $initialMail');
-                          print('Current Password: $currentPassword');
-                          print('Initial Password: $initialPassword');
+                      
                           // Comparar los valores actuales con los valores iniciales
                           if (
                             currentName != initialName && currentName != '' || 

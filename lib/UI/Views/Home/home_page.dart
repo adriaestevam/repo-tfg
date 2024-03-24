@@ -16,6 +16,7 @@ import '../../../Domain/CalendarBloc/calendar_bloc.dart';
 import '../../../Domain/NavigatorBloc/navigator_bloc.dart';
 import '../../../Domain/NavigatorBloc/navigator_event.dart';
 import '../profileScreen.dart';
+import 'package:collection/collection.dart'; 
 
 
 
@@ -57,6 +58,93 @@ class _HomeScreenState extends State<HomeScreen> {
         .toList();
   }
 
+  List<Widget> _buildEventList(DateTime date) {
+  // Filter events for the given day
+  List<Event> dayEvents = _getEventsfromDay(date);
+
+  // Separately track evaluations and sessions
+  List<Widget> evaluationsWidgets = [];
+  List<Widget> sessionsWidgets = [];
+
+  // Iterate over events and categorize them
+  for (var event in dayEvents) {
+    var eval = evaluationList.firstWhereOrNull((e) => e.id == event.id);
+    var session = sessionsList.firstWhereOrNull((s) => s.id == event.id);
+
+    if (eval != null) {
+      // It's an evaluation
+      evaluationsWidgets.add(_buildEvaluationTile(eval, event));
+    } else if (session != null) {
+      // It's a session
+      sessionsWidgets.add(_buildSessionTile(session, event));
+    }
+  }
+
+  // Return the list of widgets, with evaluations first, followed by sessions
+  return [
+    if (evaluationsWidgets.isNotEmpty) ...[
+      Padding(
+        padding: EdgeInsets.symmetric(vertical: 8.0),
+        child: Text('Evaluations', style: Theme.of(context).textTheme.headline6),
+      ),
+      ...evaluationsWidgets,
+    ],
+    if (sessionsWidgets.isNotEmpty) ...[
+      Padding(
+        padding: EdgeInsets.symmetric(vertical: 8.0),
+        child: Text('Sessions', style: Theme.of(context).textTheme.headline6),
+      ),
+      ...sessionsWidgets,
+    ],
+  ];
+  }
+
+  Widget _buildEvaluationTile(Evaluation evaluation, Event event) {
+  return ListTile(
+    leading: Icon(Icons.assessment),
+    title: Text(event.name),
+    subtitle: Text("Evaluación a las " + DateFormat('HH:mm').format(evaluation.date)),
+    trailing: Icon(Icons.chevron_right),
+  );
+  }
+
+  Widget _buildSessionTile(Session session, Event event) {
+  return Container(
+    margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+    decoration: BoxDecoration(
+      color: backgroundColor,
+      borderRadius: BorderRadius.circular(10.0),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.5),
+          spreadRadius: 1,
+          blurRadius: 5,
+          offset: Offset(0, 3),
+        ),
+      ],
+    ),
+    child: ListTile(
+      title: Text(
+        event.name,
+        style: TextStyle(color: Colors.black87),
+      ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text("Start: " + DateFormat('HH:mm').format(session.startTime)),
+          SizedBox(height: 4),
+          Text("End: " + DateFormat('HH:mm').format(session.endTime)),
+        ],
+      ),
+      trailing: Icon(Icons.chevron_right, color: Colors.black54),
+    ),
+  );
+}
+
+
+
+
+
 
   @override
   void dispose() {
@@ -71,8 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return BlocBuilder<CalendarBloc,CalendarState>(builder: (context, state) {
       if(state is CalendarInitial){
-        print('calendar initial');
-        print('melon');
+    
         calendarBloc.add(uploadEvents());
         return Scaffold(
           appBar: AppBar(
@@ -94,9 +181,11 @@ class _HomeScreenState extends State<HomeScreen> {
         );
 
       } else if(state is uploadEventsToUI){
-        print('esto es antes');
+      
         selectedEvents = state.mapOfEvents;
         evaluationList = state.evaluationList;
+        sessionsList = state.sessionList;
+
         
         calendarBloc.add(readyToDisplayCalendar());
         return Scaffold(
@@ -117,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       } 
       else if(state is displayCalendarInformation){
-        print('estado displaycalendar');
+       
         return Scaffold(
           appBar: AppBar(
             backgroundColor: backgroundColor,
@@ -141,145 +230,112 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          body: Column(
-            children: [
-              TableCalendar(
-                focusedDay: selectedDay,
-                firstDay: DateTime(1990),
-                lastDay: DateTime(2050),
-                calendarFormat: format,
-                onFormatChanged: (CalendarFormat _format) {
-                  setState(() {
-                    format = _format;
-                  });
-                },
-                startingDayOfWeek: StartingDayOfWeek.sunday,
-                daysOfWeekVisible: true,
-
-                //Day Changed
-                onDaySelected: (DateTime selectDay, DateTime focusDay) {
-                  setState(() {
-                    selectedDay = selectDay;
-                    focusedDay = focusDay;
-                  });
-                  print(focusedDay);
-                },
-                selectedDayPredicate: (DateTime date) {
-                  return isSameDay(selectedDay, date);
-                },
-
-                eventLoader: _getEventsfromDay,
-
-                //To style the Calendar
-                calendarStyle: CalendarStyle(
-                  isTodayHighlighted: true,
-                  selectedDecoration: BoxDecoration(
-                    color: primaryColor,
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.circular(5.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.shade500,
-                        offset: Offset(4,4),
-                        blurRadius: 5,
-                        spreadRadius: 1
-                      ),
-                      BoxShadow(
-                        color: Colors.white,
-                        offset: Offset(-4,-4),
-                        blurRadius: 5,
-                        spreadRadius: 1
-                      )
-                    ],
-                  ),
-                  selectedTextStyle: TextStyle(color:Colors.white),
-                  todayDecoration: BoxDecoration(
-                    color: backgroundColor,
-                    shape: BoxShape.rectangle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.shade500,
-                        offset: Offset(4,4),
-                        blurRadius: 5,
-                        spreadRadius: 1
-                      ),
-                      BoxShadow(
-                        color: Colors.white,
-                        offset: Offset(-4,-4),
-                        blurRadius: 5,
-                        spreadRadius: 1
-                      )
-                    ],
-                    borderRadius: BorderRadius.circular(5.0),
-                  ),
-                  defaultDecoration: BoxDecoration(
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.circular(5.0),
-                  ),
-                  weekendDecoration: BoxDecoration(
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.circular(5.0),
-                  ),
-                ),
-                headerStyle: HeaderStyle(
-                  formatButtonVisible: true,
-                  titleCentered: true,
-                  formatButtonShowsNext: false,
-                  formatButtonDecoration: myBoxDecoration(),
-                  formatButtonTextStyle: TextStyle(
-                    color: secondaryTextColor,
-                  ),
-                ),
-                calendarBuilders: CalendarBuilders(
-                  markerBuilder: (context, date, events) {
-                    if (events.isNotEmpty) {
-                      // Muestra un único punto si hay al menos un evento
-                      return Positioned(
-                        right: 1,
-                        bottom: 1,
-                        child: _buildEventsMarker(date, events),
-                      );
-                    }
+          body: SingleChildScrollView(
+            child:Column(
+              children: [
+                TableCalendar(
+                  focusedDay: selectedDay,
+                  firstDay: DateTime(1990),
+                  lastDay: DateTime(2050),
+                  calendarFormat: format,
+                  onFormatChanged: (CalendarFormat _format) {
+                    setState(() {
+                      format = _format;
+                    });
                   },
-                ), 
-              ),
-              ..._getEventsfromDay(selectedDay).map(
-                (Event event) {
-                  String eventDetails = "Hora no disponible";
-                  IconData eventIcon = Icons.event_note; // Icono por defecto
+                  startingDayOfWeek: StartingDayOfWeek.sunday,
+                  daysOfWeekVisible: true,
 
-                  // Buscar en la lista de evaluaciones
-                  for (var eval in evaluationList) {
-                    if (eval.id == event.id) {
-                      eventDetails = "Evaluación a las " + DateFormat('HH:mm').format(eval.date);
-                      eventIcon = Icons.assessment; // Icono para evaluaciones
-                      break; // Salir del bucle si se encuentra la evaluación
-                    }
-                  }
+                  //Day Changed
+                  onDaySelected: (DateTime selectDay, DateTime focusDay) {
+                    setState(() {
+                      selectedDay = selectDay;
+                      focusedDay = focusDay;
+                    });
+                    print(focusedDay);
+                  },
+                  selectedDayPredicate: (DateTime date) {
+                    return isSameDay(selectedDay, date);
+                  },
 
-                  // Si no se encontró en evaluaciones, buscar en las sesiones
-                  if (eventDetails == "Hora no disponible") {
-                    for (var sess in sessionsList) {
-                      if (sess.id == event.id) {
-                        eventDetails = "Sesión de " + DateFormat('HH:mm').format(sess.startTime) + " a " + DateFormat('HH:mm').format(sess.endTime);
-                        eventIcon = Icons.schedule; // Icono para sesiones
-                        break; // Salir del bucle si se encuentra la sesión
+                  eventLoader: _getEventsfromDay,
+
+                  //To style the Calendar
+                  calendarStyle: CalendarStyle(
+                    isTodayHighlighted: true,
+                    selectedDecoration: BoxDecoration(
+                      color: primaryColor,
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.circular(5.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.shade500,
+                          offset: Offset(4,4),
+                          blurRadius: 5,
+                          spreadRadius: 1
+                        ),
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: Offset(-4,-4),
+                          blurRadius: 5,
+                          spreadRadius: 1
+                        )
+                      ],
+                    ),
+                    selectedTextStyle: TextStyle(color:Colors.white),
+                    todayDecoration: BoxDecoration(
+                      color: backgroundColor,
+                      shape: BoxShape.rectangle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.shade500,
+                          offset: Offset(4,4),
+                          blurRadius: 5,
+                          spreadRadius: 1
+                        ),
+                        BoxShadow(
+                          color: Colors.white,
+                          offset: Offset(-4,-4),
+                          blurRadius: 5,
+                          spreadRadius: 1
+                        )
+                      ],
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                    defaultDecoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                    weekendDecoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                  ),
+                  headerStyle: HeaderStyle(
+                    formatButtonVisible: true,
+                    titleCentered: true,
+                    formatButtonShowsNext: false,
+                    formatButtonDecoration: myBoxDecoration(),
+                    formatButtonTextStyle: TextStyle(
+                      color: secondaryTextColor,
+                    ),
+                  ),
+                  calendarBuilders: CalendarBuilders(
+                    markerBuilder: (context, date, events) {
+                      if (events.isNotEmpty) {
+                        // Muestra un único punto si hay al menos un evento
+                        return Positioned(
+                          right: 1,
+                          bottom: 1,
+                          child: _buildEventsMarker(date, events),
+                        );
                       }
-                    }
-                  }
-
-                  return ListTile(
-                    leading: Icon(eventIcon),
-                    title: Text(event.name),
-                    subtitle: Text(eventDetails),
-                    trailing: Icon(Icons.chevron_right),
-                  );
-                },
-              ).toList(),
-
-
-
-            ],
+                    },
+                  ), 
+                ),
+                ..._buildEventList(selectedDay)
+              ],
+            ), 
           ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () async {
@@ -302,10 +358,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 sessionsList.add(newSession);
                 userSubjectEventLsit.add(newUserSubjectEvent);
 
+                calendarBloc.add(addNewSession(
+                  newSession: newSession,
+                  newEvent: newEvent,
+                  newUserSubjectEvent : newUserSubjectEvent
+                ));
                 
                 
-                  // To refresh the UI and display the new event
-                  setState(() {});
+                // To refresh the UI and display the new event
+                setState(() {});
 
               } else if (result is Map && result.containsKey('evaluation')){
                 Evaluation newEvaluation = result['evaluation'];
@@ -331,7 +392,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 setState(() {});
               
               } else {
-                print('No es ni un map');
               }
 
               
@@ -434,6 +494,7 @@ Widget _buildEventsMarker(DateTime date, List events) {
     height: 12.0, // Tamaño del punto
   );
 }
+
 
 
 

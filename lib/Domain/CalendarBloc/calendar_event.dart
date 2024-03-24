@@ -14,5 +14,18 @@ class addNewEvaluation extends CalendarEvent{
 
 }
 
+class addNewSession extends CalendarEvent{
+  final Session newSession;
+  final Event newEvent;
+  final UserSubjectEvent newUserSubjectEvent;
+
+  addNewSession({
+    required this.newSession,
+    required this.newEvent,
+    required this.newUserSubjectEvent
+  });
+
+}
+
 class uploadEvents extends CalendarEvent{}
 class readyToDisplayCalendar extends CalendarEvent{}

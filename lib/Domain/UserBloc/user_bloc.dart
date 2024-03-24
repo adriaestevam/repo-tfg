@@ -46,7 +46,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
             user.email != currentMail && currentMail != '' ||
             user.password != currentPassword && currentPassword != ''
           ) {
-          print('name is different');
+  
           userRepository.updateUserFromProfileSettings(user,currentName,currentMail,currentPassword);
         }
 

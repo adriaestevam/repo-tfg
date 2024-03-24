@@ -4,12 +4,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:tfg_v1/Data/Models/Evaluation.dart';
 import 'package:tfg_v1/Data/Models/Event.dart';
+import 'package:tfg_v1/Data/Models/Session.dart';
 import 'package:tfg_v1/Data/Models/User-Subject-Event.dart';
 import 'package:tfg_v1/Data/Models/User-Subject.dart';
 
 import 'package:tfg_v1/Data/Models/StudyBloc.dart';
 import 'package:tfg_v1/Data/Models/Subject.dart';
 import 'package:tfg_v1/Data/Models/University.dart';
+import 'package:tfg_v1/Domain/CalendarBloc/calendar_bloc.dart';
 import '../../Data/Models/Users.dart';
 
 
@@ -187,21 +189,6 @@ class DataService {
     );
   }
 
-
-  Future<void> printEverything() async {
-    final db = await database;
-
-    // Lista de los nombres de todas las tablas
-    List<String> tables = ['users','subjects','user_subject','university','study_block'];
-
-    for (String table in tables) {
-      final List<Map<String, dynamic>> results = await db.query(table);
-      print('--- Contenido de la tabla $table ---');
-      for (var row in results) {
-        print(row);
-      }
-    }
-  }
 
   Future<int?> getUniversityId(String universityName) async {
     final db = await database;
@@ -485,6 +472,19 @@ class DataService {
     await db.insert('user_subject_event', userSubjectEvent.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
+  Future<void> addNewSession(Session session, Event event, UserSubjectEvent userSubjectEvent) async {
+    final db = await database;
+    
+    // Insertar evento
+    await db.insert('event', event.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+
+    // Insertar evaluación
+    await db.insert('session', session.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+
+    // Insertar UserSubjectEvent
+    await db.insert('user_subject_event', userSubjectEvent.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
 
   Future<List<Event>> uploadEvents() async {
     final db = await database;
@@ -584,6 +584,90 @@ class DataService {
 
     // Si la lista no está vacía, significa que hay eventos asociados con el usuario
     return userSubjectEvents.isNotEmpty;
+  }
+
+  Future<bool> checkUserHasEvaluations() async {
+    final db = await database;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    int? userId = prefs.getInt("currentUserId");
+
+    if (userId == null) {
+      print('No current user ID found');
+      return false;
+    }
+
+    // Comprobar si existen evaluaciones asociadas con el usuario
+    final List<Map<String, dynamic>> userSubjectEvents = await db.query(
+      'user_subject_event',
+      where: 'userId = ?',
+      whereArgs: [userId],
+    );
+
+    // Verificar si cada evento es una evaluación
+    bool hasEvaluations = false;
+    for (var userSubjectEvent in userSubjectEvents) {
+      final eventId = userSubjectEvent['eventId'] as int;
+      final List<Map<String, dynamic>> evaluationMaps = await db.query(
+        'evaluation',
+        where: 'id = ?',
+        whereArgs: [eventId],
+      );
+      if (evaluationMaps.isNotEmpty) {
+        hasEvaluations = true;
+        break;
+      }
+    }
+    print('hasevaluations es ahora mismo ${hasEvaluations}');
+    return hasEvaluations;
+  }
+
+
+  Future<bool> checkUserHasSessions() async {
+      return false;
+  }
+
+
+  Future<List<Session>> uploadSessions() async {
+ 
+    final db = await database;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    int? userId = prefs.getInt("currentUserId");
+    
+
+    List<Session> userSessions = [];
+
+    if (userId == null) {
+      print('No current user ID found');
+      return userSessions;
+    }
+
+    // Obtener todos los UserSubjectEvent que corresponden al usuario
+    final List<Map<String, dynamic>> userSubjectEvents = await db.query(
+      'user_subject_event',
+      where: 'userId = ?',
+      whereArgs: [userId],
+    );
+
+    // Para cada UserSubjectEvent, obtener el detalle de la evaluación
+    for (var userSubjectEventMap in userSubjectEvents) {
+     
+      final eventId = userSubjectEventMap['eventId'] as int;
+      final List<Map<String, dynamic>> sessionMaps = await db.query(
+        'session',
+        where: 'id = ?',
+        whereArgs: [eventId],
+      );
+
+      // Procesar las evaluaciones obtenidas
+      for (var sessionsMap in sessionMaps) {
+      
+        // Suponiendo que la clase Evaluation tiene un constructor fromMap
+        Session session = Session.fromMap(sessionsMap);
+        userSessions.add(session);
+       
+      }
+    }
+    return userSessions; 
   }
 
 }
