@@ -117,13 +117,13 @@ eventMarkerDecoration() {
     boxShadow: [
       BoxShadow(
         color: Colors.grey.shade500,
-        offset: Offset(2,2),
+        offset: Offset(1,1),
         blurRadius: 3,
         spreadRadius: 1
       ),
       BoxShadow(
         color: Colors.white,
-        offset: Offset(-2,-2),
+        offset: Offset(-1,-1),
         blurRadius: 3,
         spreadRadius: 1
       )

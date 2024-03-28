@@ -1,17 +1,16 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:tfg_v1/Data/Models/Evaluation.dart';
 import 'package:tfg_v1/Data/Models/Event.dart';
 import 'package:tfg_v1/Data/Models/Session.dart';
-import 'package:tfg_v1/Data/Models/Subject.dart';
 import 'package:tfg_v1/Data/Models/User-Subject-Event.dart';
 import 'package:tfg_v1/UI/Utilities/AppTheme.dart';
 import 'package:tfg_v1/UI/Utilities/widgets.dart';
 import 'package:tfg_v1/UI/Views/Home/addNewEventScreen.dart';
 import 'package:intl/intl.dart';
+import 'package:tfg_v1/UI/Views/Home/editEvaluationScreen.dart';
+import 'package:tfg_v1/UI/Views/Home/editSessionScreen.dart';
 import '../../../Domain/CalendarBloc/calendar_bloc.dart';
 import '../../../Domain/NavigatorBloc/navigator_bloc.dart';
 import '../../../Domain/NavigatorBloc/navigator_event.dart';
@@ -33,8 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   CalendarFormat format = CalendarFormat.month;
   DateTime selectedDay = DateTime.now();
   DateTime focusedDay = DateTime.now();
-  bool _isEvaluation= false;
-  String _selectedSubject = '';
+
 
   TextEditingController _eventController = TextEditingController();
 
@@ -100,47 +98,219 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildEvaluationTile(Evaluation evaluation, Event event) {
-  return ListTile(
-    leading: Icon(Icons.assessment),
-    title: Text(event.name),
-    subtitle: Text("Evaluación a las " + DateFormat('HH:mm').format(evaluation.date)),
-    trailing: Icon(Icons.chevron_right),
-  );
+    
+    final CalendarBloc calendarBloc = BlocProvider.of<CalendarBloc>(context);
+
+    return Container(
+      decoration: myBoxDecoration(),
+      margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+      child: Stack(
+        children: [
+          ListTile(
+            leading: Icon(Icons.local_library),
+            title: Text(event.name),
+            subtitle: Text("Evaluación a las " + DateFormat('HH:mm').format(evaluation.date)),
+          ),
+          Positioned(
+            right: 0,
+            top: 0,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.edit, size: 20),
+                  onPressed: () async {
+                    // Navegar a la pantalla de edición y obtener los resultados actualizados
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => EditEvaluationScreen(originalEvaluation: evaluation, selectedDay: evaluation.date,)),
+                    );
+
+                    if (result is Map && result.containsKey('evaluation')) {
+                      Evaluation newEvaluation = result['evaluation'];
+                      Event newEvent = result['event'];
+                      UserSubjectEvent newUserSubjectEvent = result['userSubjectEvent'];
+
+                      // Actualizar la lista de evaluaciones
+                      int index = evaluationList.indexWhere((eva) => eva.id == evaluation.id);
+                      if (index != -1) {
+                        evaluationList[index] = newEvaluation;
+                      }
+
+                      // Actualizar la lista de eventos
+                      DateTime adjustedSelectedDay = _getDateOnly(selectedDay);
+                      int eventIndex = -1;
+                      selectedEvents.forEach((date, events) {
+                        if (_getDateOnly(date) == adjustedSelectedDay) {
+                          int tempIndex = events.indexWhere((e) => e.id == newEvent.id);
+                          if (tempIndex != -1) {
+                            eventIndex = tempIndex;
+                            selectedEvents[date]![tempIndex] = newEvent; // Actualiza el evento en el día correcto
+                          }
+                        }
+                      });
+
+                      if (eventIndex == -1) {
+                        print('Error: Evento no encontrado para el día ajustado.');
+                      }
+
+                      // Actualizar la lista de UserSubjectEvent
+                      int userSubjectEventIndex = userSubjectEventLsit.indexWhere((use) => use.eventId == newUserSubjectEvent.eventId);
+                      if (userSubjectEventIndex != -1) {
+                        userSubjectEventLsit[userSubjectEventIndex] = newUserSubjectEvent;
+                      }
+
+                      // Llamar al bloc para actualizar la base de datos, etc.
+                      calendarBloc.add(updateEvaluation(newEvaluation: newEvaluation, newEvent: newEvent, newUserSubjectEvent: newUserSubjectEvent));
+
+                      // Actualizar el UI
+                      setState(() {});
+
+                      
+                    }
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.delete, size: 20),
+                  onPressed: () {
+                    // Llamar a la función de eliminación
+                    _deleteEvaluation(evaluation.id);
+                    setState(() {});
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildSessionTile(Session session, Event event) {
-  return Container(
-    margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-    decoration: BoxDecoration(
-      color: backgroundColor,
-      borderRadius: BorderRadius.circular(10.0),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.5),
-          spreadRadius: 1,
-          blurRadius: 5,
-          offset: Offset(0, 3),
-        ),
-      ],
-    ),
-    child: ListTile(
-      title: Text(
-        event.name,
-        style: TextStyle(color: Colors.black87),
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text("Start: " + DateFormat('HH:mm').format(session.startTime)),
-          SizedBox(height: 4),
-          Text("End: " + DateFormat('HH:mm').format(session.endTime)),
+    
+    final CalendarBloc calendarBloc = BlocProvider.of<CalendarBloc>(context);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+      decoration: myBoxDecoration(),
+      child: Stack(
+        children: [
+          ListTile(
+            leading: Icon(Icons.lightbulb_outline),
+            title: Text(event.name, style: TextStyle(color: Colors.black87)),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text("Start: " + DateFormat('HH:mm').format(session.startTime)),
+                SizedBox(height: 4),
+                Text("End: " + DateFormat('HH:mm').format(session.endTime)),
+              ],
+            ),
+          ),
+          Positioned(
+            right: 0,
+            top: 0,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.edit, size: 20),
+                  onPressed: () async {
+                    // Navegar a la pantalla de edición y obtener los resultados actualizados
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => EditSessionScreen(originalSession: session, selectedDay: session.startTime,)),
+                    );
+
+                    if (result is Map && result.containsKey('session')) {
+
+                      Session newSession = result['session'];
+                      Event newEvent = result['event'];
+                      UserSubjectEvent newUserSubjectEvent = result['userSubjectEvent'];
+
+                      // Actualizar la sesión, el evento y UserSubjectEvent en las listas y mapas
+                      int index = sessionsList.indexWhere((s) => s.id == session.id);
+                      if (index != -1) {
+                        sessionsList[index] = newSession;
+                      }
+                      
+                      DateTime adjustedSelectedDay = _getDateOnly(selectedDay);
+                      int eventIndex = -1;
+                      selectedEvents.forEach((date, events) {
+                        if (_getDateOnly(date) == adjustedSelectedDay) {
+                          int tempIndex = events.indexWhere((e) => e.id == newEvent.id);
+                          if (tempIndex != -1) {
+                            eventIndex = tempIndex;
+                            selectedEvents[date]![tempIndex] = newEvent; // Actualiza el evento en el día correcto
+                          }
+                        }
+                      });
+
+                      if (eventIndex == -1) {
+                        print('Error: Evento no encontrado para el día ajustado.');
+                      }
+
+                      int userSubjectEventIndex = userSubjectEventLsit.indexWhere((use) => use.eventId == newUserSubjectEvent.eventId);
+                      if (userSubjectEventIndex != -1) {
+                        userSubjectEventLsit[userSubjectEventIndex] = newUserSubjectEvent;
+                      }
+
+                      
+                      calendarBloc.add(updateSession(newSession: newSession, newEvent: newEvent, newUserSubjectEvent: newUserSubjectEvent));
+                      
+                      // Actualizar el UI
+                      setState(() {});
+                    }
+                  },
+                ),
+
+                IconButton(
+                  icon: const Icon(Icons.delete, size: 20),
+                  onPressed: () {
+                    // Implementar lógica de eliminación
+                     _deleteSession(session.id);
+                    setState(() {});
+                  },
+                ),
+              ],
+            ),
+          ),
         ],
       ),
-      trailing: Icon(Icons.chevron_right, color: Colors.black54),
-    ),
-  );
-}
+    );
+  }
 
+  void _deleteSession(int sessionId) {
+    final CalendarBloc calendarBloc = BlocProvider.of<CalendarBloc>(context);
+
+    setState(() {
+      // Eliminar la sesión de la lista
+      sessionsList.removeWhere((session) => session.id == sessionId);
+
+      // Actualizar selectedEvents para quitar el evento asociado
+      selectedEvents.forEach((date, events) {
+        events.removeWhere((event) => event.id == sessionId);
+      });
+    });
+
+    calendarBloc.add(DeleteSessionEvent(sessionId: sessionId));
+  }
+
+  void _deleteEvaluation(int evaluationId) {
+    final CalendarBloc calendarBloc = BlocProvider.of<CalendarBloc>(context);
+    
+    setState(() {
+      // Eliminar la sesión de la lista
+      evaluationList.removeWhere((evaluation) => evaluation.id == evaluationId);
+
+      // Actualizar selectedEvents para quitar el evento asociado
+      selectedEvents.forEach((date, events) {
+        events.removeWhere((event) => event.id == evaluationId);
+      });
+    });
+
+    calendarBloc.add(DeleteEvaluationEvent(evaluationId: evaluationId));
+  }
 
 
 
@@ -163,9 +333,9 @@ class _HomeScreenState extends State<HomeScreen> {
         calendarBloc.add(uploadEvents());
         return Scaffold(
           appBar: AppBar(
-            title: Text('Cargando datos de la base de datos de eventos'),
+            title: const Text('Cargando datos de la base de datos de eventos'),
           ),
-          body: Center(
+          body: const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -243,7 +413,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       format = _format;
                     });
                   },
-                  startingDayOfWeek: StartingDayOfWeek.sunday,
+                  startingDayOfWeek: StartingDayOfWeek.monday,
                   daysOfWeekVisible: true,
 
                   //Day Changed
@@ -319,17 +489,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     formatButtonTextStyle: TextStyle(
                       color: secondaryTextColor,
                     ),
+                    leftChevronVisible: false,  // Ocultar el botón de flecha izquierda
+                    rightChevronVisible: false, // Ocultar el botón de flecha derecha
                   ),
                   calendarBuilders: CalendarBuilders(
                     markerBuilder: (context, date, events) {
                       if (events.isNotEmpty) {
-                        // Muestra un único punto si hay al menos un evento
                         return Positioned(
                           right: 1,
-                          bottom: 1,
+                          top: 1,
                           child: _buildEventsMarker(date, events),
                         );
                       }
+                      return null;
                     },
                   ), 
                 ),
@@ -449,6 +621,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: (index) {
                 switch(index){
                   case 0: navigatorBloc.add(GoToHomeEvent());
+                  calendarBloc.add(uploadEvents());
                     break;
                   case 1: navigatorBloc.add(GoToObjectivesEvent());
                     break;
@@ -486,12 +659,17 @@ class _HomeScreenState extends State<HomeScreen> {
       },);
     }
   }
+  
+  DateTime _getDateOnly(DateTime dateTime) {
+    return DateTime(dateTime.year, dateTime.month, dateTime.day);
+  }
+
 
 Widget _buildEventsMarker(DateTime date, List events) {
   return Container(
     decoration: eventMarkerDecoration(),
-    width: 12.0, // Tamaño del punto
-    height: 12.0, // Tamaño del punto
+    width: 9.0, // Tamaño del punto
+    height: 9.0, // Tamaño del punto
   );
 }
 

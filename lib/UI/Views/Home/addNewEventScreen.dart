@@ -28,6 +28,8 @@ class _AddNewEventScreenState extends State<AddNewEventScreen> with SingleTicker
   TimeOfDay _selectedStartTime = TimeOfDay.now();
   TimeOfDay _selectedEndTime = TimeOfDay.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
+  List<String> _formulaElements = [];
+  String? _selectedFormulaElement;
 
   int _currentTabIndex = 0;
 
@@ -35,6 +37,7 @@ class _AddNewEventScreenState extends State<AddNewEventScreen> with SingleTicker
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _selectedFormulaElement = null;
   }
 
   @override
@@ -281,6 +284,8 @@ class _AddNewEventScreenState extends State<AddNewEventScreen> with SingleTicker
 
 
   Widget _buildEvaluationTab(List<Subject> subjects) {
+
+
     return SingleChildScrollView(
       padding: EdgeInsets.all(16.0),
       child: Column(
@@ -293,6 +298,7 @@ class _AddNewEventScreenState extends State<AddNewEventScreen> with SingleTicker
           SizedBox(height: 20.0),
           // Dropdown for selecting subject
           Container(
+            decoration: myBoxDecoration(),
             child: DropdownButtonFormField<String>(
               value: _selectedSubject?.name,
               items: subjects
@@ -303,8 +309,12 @@ class _AddNewEventScreenState extends State<AddNewEventScreen> with SingleTicker
                   .toList(),
               onChanged: (value) {
                 setState(() {
-                  _selectedSubject = subjects.firstWhere(
-                    (subject) => subject.name == value);
+                  _selectedSubject = subjects.firstWhere((subject) => subject.name == value);
+                  // Analizar la fórmula y actualizar _formulaElements
+                  _formulaElements = _selectedSubject!.formula.split(', ').map((e) => e.split(': ')[0]).toList();
+                  
+                  
+                  _selectedFormulaElement = null; // Restablecer el elemento seleccionado
                 });
               },
               decoration: InputDecoration(
@@ -314,9 +324,29 @@ class _AddNewEventScreenState extends State<AddNewEventScreen> with SingleTicker
                 ),
               ),
             ),
-            decoration: myBoxDecoration(),
           ),
           SizedBox(height: 20.0),
+          Container(
+            decoration: myBoxDecoration(),
+            child: DropdownButtonFormField<String>(
+              value: _selectedFormulaElement,
+              items: _formulaElements
+                  .map((element) => DropdownMenuItem(
+                        value: element,
+                        child: Text(element),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedFormulaElement = value;
+                });
+              },
+              decoration: InputDecoration(
+                labelText: 'Formula Element',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
           // Start time picker
           ListTile(
             title: Text(
@@ -359,7 +389,7 @@ class _AddNewEventScreenState extends State<AddNewEventScreen> with SingleTicker
 
                   Event newEvent = Event(
                     id: eventId,
-                    name: 'Evaluation of subject ${_selectedSubject!.name}',
+                    name: '${_selectedFormulaElement} of subject ${_selectedSubject!.name}',
                     isDone:false 
                   );
 

@@ -670,5 +670,115 @@ class DataService {
     return userSessions; 
   }
 
+  Future<void> deleteSessionEvent(int sessionId) async {
+    final db = await database;
+    
+    // Eliminar la sesión de la tabla 'session'
+    await db.delete(
+      'session',
+      where: 'id = ?',
+      whereArgs: [sessionId],
+    );
+
+    // También eliminar el evento asociado en la tabla 'event'
+    await db.delete(
+      'event',
+      where: 'id = ?',
+      whereArgs: [sessionId],
+    );
+
+    // Opcionalmente, si se necesita, eliminar la relación en la tabla 'user_subject_event'
+    await db.delete(
+      'user_subject_event',
+      where: 'eventId = ?',
+      whereArgs: [sessionId],
+    );
+  }
+
+  Future<void> deleteEvaluationEvent(int evaluationId) async {
+    final db = await database;
+    
+    // Eliminar la evaluación de la tabla 'evaluation'
+    await db.delete(
+      'evaluation',
+      where: 'id = ?',
+      whereArgs: [evaluationId],
+    );
+
+    // También eliminar el evento asociado en la tabla 'event'
+    await db.delete(
+      'event',
+      where: 'id = ?',
+      whereArgs: [evaluationId],
+    );
+
+    // Opcionalmente, si se necesita, eliminar la relación en la tabla 'user_subject_event'
+    await db.delete(
+      'user_subject_event',
+      where: 'eventId = ?',
+      whereArgs: [evaluationId],
+    );
+  }
+
+  Future<void> updateEvaluation(Event newEvent, Evaluation newEvaluation, UserSubjectEvent newUserSubjectEvent) async {
+    final db = await database;
+
+    // Actualizar el evento en la tabla 'event'
+    await db.update(
+      'event',
+      newEvent.toMap(),
+      where: 'id = ?',
+      whereArgs: [newEvent.id],
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+
+    // Actualizar la evaluación en la tabla 'evaluation'
+    await db.update(
+      'evaluation',
+      newEvaluation.toMap(),
+      where: 'id = ?',
+      whereArgs: [newEvaluation.id],
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+
+    // Actualizar la relación en la tabla 'user_subject_event'
+    await db.update(
+      'user_subject_event',
+      newUserSubjectEvent.toMap(),
+      where: 'eventId = ?',
+      whereArgs: [newUserSubjectEvent.eventId],
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+  Future<void> updateSession(Event newEvent, Session newSession, UserSubjectEvent newUserSubjectEvent) async {
+    final db = await database;
+
+    // Actualizar el evento en la tabla 'event'
+    await db.update(
+      'event',
+      newEvent.toMap(),
+      where: 'id = ?',
+      whereArgs: [newEvent.id],
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+
+    // Actualizar la evaluación en la tabla 'evaluation'
+    await db.update(
+      'session',
+      newSession.toMap(),
+      where: 'id = ?',
+      whereArgs: [newSession.id],
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+
+    // Actualizar la relación en la tabla 'user_subject_event'
+    await db.update(
+      'user_subject_event',
+      newUserSubjectEvent.toMap(),
+      where: 'eventId = ?',
+      whereArgs: [newUserSubjectEvent.eventId],
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
 }
 

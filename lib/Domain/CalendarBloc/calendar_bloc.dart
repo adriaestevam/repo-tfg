@@ -33,7 +33,37 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
         print(error);
       }
     });
-    
+    on<DeleteSessionEvent>((event, emit) async {
+      try{
+        await eventRepository.DeleteSessionEvent(event.sessionId);
+      } catch(error){
+        print(error);
+      }
+    });
+    on<DeleteEvaluationEvent>((event, emit) async {
+      try{
+        await eventRepository.DeleteEvaluationEvent(event.evaluationId);
+      } catch(error){
+        print(error);
+      }
+    });
+
+    on<updateEvaluation>((event, emit) async {
+      try{
+        await eventRepository.updateEvaluation(event.newEvent,event.newEvaluation,event.newUserSubjectEvent);
+      } catch(error){
+        print(error);
+      }
+    });
+
+    on<updateSession>((event, emit) async {
+      try{
+        await eventRepository.updateSession(event.newEvent,event.newSession,event.newUserSubjectEvent);
+      } catch(error){
+        print(error);
+      }
+    });
+        
     on<uploadEvents>((event, emit) async {
       Map<DateTime, List<Event>> mapOfEvents = {};
       List<Event> userEvents = [];

@@ -47,6 +47,22 @@ class EventRepository {
    return _dataService.uploadSessions();
   }
 
+  DeleteSessionEvent(int sessionId) {
+    _dataService.deleteSessionEvent(sessionId);
+  }
+
+  DeleteEvaluationEvent(int sessionId) {
+    _dataService.deleteEvaluationEvent(sessionId);
+  }
+
+  updateEvaluation(Event newEvent, Evaluation newEvaluation, UserSubjectEvent newUserSubjectEvent) {
+    _dataService.updateEvaluation(newEvent, newEvaluation, newUserSubjectEvent);
+  }
+
+  updateSession(Event newEvent, Session newSession, UserSubjectEvent newUserSubjectEvent) {
+    _dataService.updateSession(newEvent, newSession, newUserSubjectEvent);
+  }
+
 }
 
   
