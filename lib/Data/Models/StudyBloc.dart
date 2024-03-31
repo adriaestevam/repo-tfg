@@ -32,16 +32,29 @@ class StudyBlock {
       id: map['id'],
       userId: map['userId'],
       day: map['day'],
-      startTime: _convertStringToTimeOfDay(map['startTime']), // Convertir String a TimeOfDay
-      endTime: _convertStringToTimeOfDay(map['endTime']),     // Convertir String a TimeOfDay
+      startTime: _parseTime(map['startTime']),
+      endTime: _parseTime(map['endTime']),
     );
   }
   
-  // Convierte un String en formato HH:mm a un TimeOfDay
-  static TimeOfDay _convertStringToTimeOfDay(String timeString) {
-    List<String> parts = timeString.split(':');
-    int hour = int.parse(parts[0]);
-    int minute = int.parse(parts[1]);
-    return TimeOfDay(hour: hour, minute: minute);
+  static TimeOfDay _parseTime(String timeString) {
+    try {
+      // Assuming the format is 'TimeOfDay(HH:mm)'
+      final timeMatch = RegExp(r'TimeOfDay\((\d{2}):(\d{2})\)').firstMatch(timeString);
+      if (timeMatch != null) {
+        final hour = int.parse(timeMatch.group(1)!);
+        final minute = int.parse(timeMatch.group(2)!);
+        return TimeOfDay(hour: hour, minute: minute);
+      } else {
+        throw FormatException("Invalid time format");
+      }
+    } catch (e) {
+      print('Error parsing time: $e');
+      rethrow;
+    }
   }
+
 }
+
+
+

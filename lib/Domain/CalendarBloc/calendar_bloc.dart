@@ -1,8 +1,15 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tfg_v1/Data/Models/Evaluation.dart';
 import 'package:tfg_v1/Data/Models/Event.dart';
+import 'package:tfg_v1/Data/Models/Plan.dart';
+import 'package:tfg_v1/Data/Models/StudyBloc.dart';
+import 'package:tfg_v1/Data/Models/Subject.dart';
 import 'package:tfg_v1/Data/Models/User-Subject-Event.dart';
+import 'package:tfg_v1/Data/Models/User-Subject.dart';
+import 'package:tfg_v1/Data/Planificator.dart';
+import 'package:tfg_v1/Data/Repositories/UserRepository.dart';
 
 import '../../Data/Models/Session.dart';
 import '../../Data/Repositories/EventRepository.dart';
@@ -70,11 +77,76 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
       List<Evaluation> userEvaluations = [];
       List<Session> userSessions = [];
       try {
-        if(await eventRepository.checkUserHasEvents()){
-          userEvents = await eventRepository.uploadEvents();
-          userEvaluations = await eventRepository.uploadEvaluations();
-          userSessions = await eventRepository.uploadSession();
 
+
+        if(!await eventRepository.checkUserHasPlan()){
+          print('El user no té cap plan');
+
+          Map<String, dynamic> planData = await eventRepository.getPlanData();
+          print('Plan data obtained: $planData');
+
+          // Extrayendo la información de planData
+          List<StudyBlock> studyBlocks = planData['studyBlocks'] as List<StudyBlock>;
+          print('Study blocks: $studyBlocks');
+
+          List<Subject> subjects = planData['subjects'] as List<Subject>;
+          print('Subjects: $subjects');
+
+          List<UserSubject> userSubjects = planData['userSubjects'] as List<UserSubject>;
+          print('User subjects: $userSubjects');
+
+          List<Event> events = planData['events'] as List<Event>;
+          print('Events: $events');
+
+          List<Evaluation> evaluations = planData['evaluations'] as List<Evaluation>;
+          print('Evaluations: $evaluations');
+
+          List<UserSubjectEvent> userSubjectEvents = planData['userSubjectEvents'] as List<UserSubjectEvent>;
+          print('User subject events: $userSubjectEvents');
+
+          print('Data obtained and extracted');
+
+          // Crear instancia de Planificator y generar plan
+          Planificator planificator = Planificator();
+          Map<String,dynamic> plan = planificator.generarPlan(studyBlocks, subjects, userSubjects, events, evaluations, userSubjectEvents);
+          print('Generated plan: $plan');
+
+          List<Event> eventsFromPlan = plan['events'] as List<Event>;
+          print('Events from plan: $eventsFromPlan');
+
+          List<Session> sessionsFromPlan = plan['sessions'] as List<Session>; // Ensure this key matches with what generarPlan returns
+          print('Sessions from plan: $sessionsFromPlan');
+
+          userEvents.addAll(eventsFromPlan);
+          userSessions.addAll(sessionsFromPlan);
+
+          print('Final user events: $userEvents');
+          print('Final user sessions: $userSessions');
+
+        } else {
+          print('El user té un plan');
+        }
+
+
+
+
+        if(await eventRepository.checkUserHasEvents()){
+          List<Event> repositoryEvents = await eventRepository.uploadEvents();
+          userEvaluations = await eventRepository.uploadEvaluations();
+          List<Session> repositorySessions = await eventRepository.uploadSessions();
+
+          // Merge and remove duplicates
+          for (var event in repositoryEvents) {
+            if (!userEvents.any((e) => e.id == event.id)) {
+              userEvents.add(event);
+            }
+          }
+          for (var session in repositorySessions) {
+            if (!userSessions.any((s) => s.id == session.id)) {
+              userSessions.add(session);
+            }
+          }
+    
           // Create a map of evaluations by their ID for quick lookup
           Map<int, Evaluation> evaluationMap = { for (var e in userEvaluations) e.id: e };
           Map<int, Session> sessionMap = { for (var s in userSessions) s.id: s };
@@ -105,6 +177,8 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
             }
           }
         }
+
+     
         
         emit(uploadEventsToUI(mapOfEvents: mapOfEvents,evaluationList: userEvaluations,sessionList: userSessions));
 

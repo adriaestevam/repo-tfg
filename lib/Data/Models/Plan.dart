@@ -1,11 +1,9 @@
 class Plan {
-  final int userId;    // Clave foránea del usuario y parte de la clave primaria
-  final int subjectId; // Clave foránea de la asignatura y parte de la clave primaria
+  final int userId;   // Clave foránea de la asignatura y parte de la clave primaria
   final int sessionId; // Clave foránea de la sesión y parte de la clave primaria
 
   Plan({
     required this.userId,
-    required this.subjectId,
     required this.sessionId,
   });
 
@@ -13,7 +11,6 @@ class Plan {
   Map<String, dynamic> toMap() {
     return {
       'userId': userId,
-      'subjectId': subjectId,
       'sessionId': sessionId,
     };
   }
@@ -22,7 +19,6 @@ class Plan {
   factory Plan.fromMap(Map<String, dynamic> map) {
     return Plan(
       userId: map['userId'],
-      subjectId: map['subjectId'],
       sessionId: map['sessionId'],
     );
   }

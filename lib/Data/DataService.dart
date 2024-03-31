@@ -386,19 +386,21 @@ class DataService {
 
   Future<List<StudyBlock>> getStudyBlocksByUserId(int userId) async {
     final Database db = await database;
-
-    // Realizamos la consulta para obtener los bloques de estudio del usuario especificado
+    print('Fetching StudyBlocks for user ID: $userId');
+    
     final List<Map<String, dynamic>> maps = await db.query(
       'study_block',
       where: 'userId = ?',
       whereArgs: [userId],
     );
 
-    // Convertimos los resultados de la consulta a una lista de objetos StudyBlock
+    print('StudyBlocks raw data: $maps');
+
     return List.generate(maps.length, (i) {
       return StudyBlock.fromMap(maps[i]);
     });
   }
+
 
   Future<List<UserSubject>> objectivesAndPrioritiesByUserId(int id) async {
     final db = await database;
@@ -670,6 +672,19 @@ class DataService {
     return userSessions; 
   }
 
+  Future<List<UserSubjectEvent>> uploadUserSubjectEvents(int userId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'user_subject_event',
+      where: 'userId = ?',
+      whereArgs: [userId],
+    );
+
+    return List.generate(maps.length, (i) {
+      return UserSubjectEvent.fromMap(maps[i]);
+    });
+  }
+
   Future<void> deleteSessionEvent(int sessionId) async {
     final db = await database;
     
@@ -780,5 +795,78 @@ class DataService {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
+
+  // Method to check if the current user has a plan
+  Future<bool> checkUserHasPlan() async {
+    final db = await database; // Get the database instance
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    int? userId = prefs.getInt("currentUserId");
+
+    if (userId == null) {
+      print('No current user ID found');
+      return false; // If there's no current user, return false
+    }
+
+    // Query the 'plan' table to check for entries corresponding to the current user
+    final List<Map<String, dynamic>> plans = await db.query(
+      'plan',
+      where: 'userId = ?',
+      whereArgs: [userId],
+    );
+
+    // Return true if there are entries, else false
+    return plans.isNotEmpty;
+  }
+
+  Future<Map<String, dynamic>> getUserPlanData() async {
+    final db = await database;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    int? userId = prefs.getInt("currentUserId");
+
+    if (userId == null) {
+      print('No current user ID found');
+      return {}; // Si no hay usuario actual, devuelve un mapa vacío
+    }
+
+    print('Current user ID: $userId');
+    print('hola');
+    // Obtener StudyBlocks del usuario actual
+    List<StudyBlock> studyBlocks = await getStudyBlocksByUserId(userId);
+    print('StudyBlocks retrieved: ${studyBlocks.length} items');
+
+    // Obtener Subjects del usuario actual
+    List<Subject> subjects = await getSubjectsByUserId(userId);
+    print('Subjects retrieved: ${subjects.length} items');
+
+    // Obtener UserSubjects del usuario actual
+    List<UserSubject> userSubjects = await objectivesAndPrioritiesByUserId(userId);
+    print('UserSubjects retrieved: ${userSubjects.length} items');
+
+    // Obtener Events del usuario actual
+    List<Event> events = await uploadEvents(); // Esta función ya filtra por usuario actual
+    print('Events retrieved: ${events.length} items');
+
+    // Obtener Evaluations del usuario actual
+    List<Evaluation> evaluations = await uploadEvaluations(); // Esta función ya filtra por usuario actual
+    print('Evaluations retrieved: ${evaluations.length} items');
+
+    // Obtener UserSubjectEvents del usuario actual
+    List<UserSubjectEvent> userSubjectEvents = await uploadUserSubjectEvents(userId);
+    print('UserSubjectEvents retrieved: ${userSubjectEvents.length} items');
+
+    Map<String, dynamic> planData = {
+      'studyBlocks': studyBlocks,
+      'subjects': subjects,
+      'userSubjects': userSubjects,
+      'events': events,
+      'evaluations': evaluations,
+      'userSubjectEvents': userSubjectEvents,
+    };
+
+    print('Plan data prepared for the user: $planData');
+
+      return planData;
+  }
+
 }
 

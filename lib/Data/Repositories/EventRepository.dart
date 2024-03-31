@@ -43,7 +43,7 @@ class EventRepository {
     _dataService.addNewSession(newSession,newEvent,newUserSubjectEvent);
   }
 
-  uploadSession() {
+  uploadSessions() {
    return _dataService.uploadSessions();
   }
 
@@ -61,6 +61,13 @@ class EventRepository {
 
   updateSession(Event newEvent, Session newSession, UserSubjectEvent newUserSubjectEvent) {
     _dataService.updateSession(newEvent, newSession, newUserSubjectEvent);
+  }
+
+  checkUserHasPlan() {
+    return _dataService.checkUserHasPlan();
+  }
+  getPlanData() {
+    return _dataService.getUserPlanData();
   }
 
 }

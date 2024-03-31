@@ -110,6 +110,68 @@ myBoxDecoration() {
   );       
 }
 
+myDayofCalendarDecoration() {
+  return BoxDecoration(
+    color: primaryColor,
+    borderRadius: BorderRadius.circular(5),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.grey.shade500,
+        offset: Offset(2,2),
+        blurRadius: 3,
+        spreadRadius: 1
+      ),
+      BoxShadow(
+        color: Colors.white,
+        offset: Offset(-2,-2),
+        blurRadius: 3,
+        spreadRadius: 1
+      )
+    ]
+  );       
+}
+currentDayDecoration() {
+  return BoxDecoration(
+    color: backgroundColor,
+    borderRadius: BorderRadius.circular(5),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.grey.shade500,
+        offset: Offset(2,2),
+        blurRadius: 3,
+        spreadRadius: 1
+      ),
+      BoxShadow(
+        color: Colors.white,
+        offset: Offset(-2,-2),
+        blurRadius: 3,
+        spreadRadius: 1
+      )
+    ]
+  );       
+}
+
+myAddEventButtonDecoration() {
+  return BoxDecoration(
+    color: backgroundColor,
+    shape: BoxShape.circle,
+    boxShadow: [
+      BoxShadow(
+        color: Colors.grey.shade500,
+        offset: Offset(1,1),
+        blurRadius: 2,
+        spreadRadius: 1
+      ),
+      BoxShadow(
+        color: Colors.white,
+        offset: Offset(-1,-1),
+        blurRadius: 2,
+        spreadRadius: 1
+      )
+    ]
+  );       
+}
+
 eventMarkerDecoration() {
   return BoxDecoration(
     color: backgroundColor,

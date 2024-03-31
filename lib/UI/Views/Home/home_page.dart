@@ -7,8 +7,8 @@ import 'package:tfg_v1/Data/Models/Session.dart';
 import 'package:tfg_v1/Data/Models/User-Subject-Event.dart';
 import 'package:tfg_v1/UI/Utilities/AppTheme.dart';
 import 'package:tfg_v1/UI/Utilities/widgets.dart';
-import 'package:tfg_v1/UI/Views/Home/addNewEventScreen.dart';
 import 'package:intl/intl.dart';
+import 'package:tfg_v1/UI/Views/Home/addNewEventScreen.dart';
 import 'package:tfg_v1/UI/Views/Home/editEvaluationScreen.dart';
 import 'package:tfg_v1/UI/Views/Home/editSessionScreen.dart';
 import '../../../Domain/CalendarBloc/calendar_bloc.dart';
@@ -16,7 +16,6 @@ import '../../../Domain/NavigatorBloc/navigator_bloc.dart';
 import '../../../Domain/NavigatorBloc/navigator_event.dart';
 import '../profileScreen.dart';
 import 'package:collection/collection.dart'; 
-
 
 
 class HomeScreen extends StatefulWidget {
@@ -355,7 +354,6 @@ class _HomeScreenState extends State<HomeScreen> {
         selectedEvents = state.mapOfEvents;
         evaluationList = state.evaluationList;
         sessionsList = state.sessionList;
-
         
         calendarBloc.add(readyToDisplayCalendar());
         return Scaffold(
@@ -403,174 +401,143 @@ class _HomeScreenState extends State<HomeScreen> {
           body: SingleChildScrollView(
             child:Column(
               children: [
-                TableCalendar(
-                  focusedDay: selectedDay,
-                  firstDay: DateTime(1990),
-                  lastDay: DateTime(2050),
-                  calendarFormat: format,
-                  onFormatChanged: (CalendarFormat _format) {
-                    setState(() {
-                      format = _format;
-                    });
-                  },
-                  startingDayOfWeek: StartingDayOfWeek.monday,
-                  daysOfWeekVisible: true,
+                Padding(
+                  padding:  const EdgeInsets.only(left: 8.0, right: 8),
+                  child: Card(
+                    color: Colors.transparent,
+                    elevation: 0,
+                    child: TableCalendar(
+                      focusedDay: selectedDay,
+                      firstDay: DateTime(1990),
+                      lastDay: DateTime(2050),
+                      calendarFormat: format,
+                      onFormatChanged: (CalendarFormat _format) {
+                        setState(() {
+                          format = _format;
+                        });
+                      },
+                      startingDayOfWeek: StartingDayOfWeek.monday,
+                      daysOfWeekVisible: true,
 
-                  //Day Changed
-                  onDaySelected: (DateTime selectDay, DateTime focusDay) {
-                    setState(() {
-                      selectedDay = selectDay;
-                      focusedDay = focusDay;
-                    });
-                    print(focusedDay);
-                  },
-                  selectedDayPredicate: (DateTime date) {
-                    return isSameDay(selectedDay, date);
-                  },
+                      //Day Changed
+                      onDaySelected: (DateTime selectDay, DateTime focusDay) {
+                        setState(() {
+                          selectedDay = selectDay;
+                          focusedDay = focusDay;
+                        });
+                        print(focusedDay);
+                      },
+                      selectedDayPredicate: (DateTime date) {
+                        return isSameDay(selectedDay, date);
+                      },
 
-                  eventLoader: _getEventsfromDay,
+                      eventLoader: _getEventsfromDay,
 
-                  //To style the Calendar
-                  calendarStyle: CalendarStyle(
-                    isTodayHighlighted: true,
-                    selectedDecoration: BoxDecoration(
-                      color: primaryColor,
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.circular(5.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.shade500,
-                          offset: Offset(4,4),
-                          blurRadius: 5,
-                          spreadRadius: 1
+                      //To style the Calendar
+                      calendarStyle: CalendarStyle(
+                        isTodayHighlighted: true,
+                        selectedDecoration: myDayofCalendarDecoration(),
+                        selectedTextStyle: TextStyle(color:Colors.white),
+                        todayTextStyle: TextStyle(color: primaryColor,fontWeight: FontWeight.bold),
+                        todayDecoration: currentDayDecoration(),
+                        defaultDecoration: BoxDecoration(
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.circular(5.0),
                         ),
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: Offset(-4,-4),
-                          blurRadius: 5,
-                          spreadRadius: 1
-                        )
-                      ],
-                    ),
-                    selectedTextStyle: TextStyle(color:Colors.white),
-                    todayDecoration: BoxDecoration(
-                      color: backgroundColor,
-                      shape: BoxShape.rectangle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.shade500,
-                          offset: Offset(4,4),
-                          blurRadius: 5,
-                          spreadRadius: 1
+                        weekendDecoration: BoxDecoration(
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.circular(5.0),
                         ),
-                        BoxShadow(
-                          color: Colors.white,
-                          offset: Offset(-4,-4),
-                          blurRadius: 5,
-                          spreadRadius: 1
-                        )
-                      ],
-                      borderRadius: BorderRadius.circular(5.0),
+                      ),
+                      headerStyle: HeaderStyle(
+                        leftChevronVisible: false,
+                        rightChevronIcon: Icon(Icons.arrow_forward_ios, size: 15, color: backgroundColor),
+                        formatButtonDecoration: myBoxDecoration()
+                    
+                      ),
+                      calendarBuilders: CalendarBuilders(
+                        markerBuilder: (context, date, events) {
+                          if (events.isNotEmpty) {
+                            return Positioned(
+                              right: 1,
+                              top: 1,
+                              child: _buildEventsMarker(date, events),
+                            );
+                          }
+                          return null;
+                        },
+                      ), 
                     ),
-                    defaultDecoration: BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                    weekendDecoration: BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                  ),
-                  headerStyle: HeaderStyle(
-                    formatButtonVisible: true,
-                    titleCentered: true,
-                    formatButtonShowsNext: false,
-                    formatButtonDecoration: myBoxDecoration(),
-                    formatButtonTextStyle: TextStyle(
-                      color: secondaryTextColor,
-                    ),
-                    leftChevronVisible: false,  // Ocultar el botón de flecha izquierda
-                    rightChevronVisible: false, // Ocultar el botón de flecha derecha
-                  ),
-                  calendarBuilders: CalendarBuilders(
-                    markerBuilder: (context, date, events) {
-                      if (events.isNotEmpty) {
-                        return Positioned(
-                          right: 1,
-                          top: 1,
-                          child: _buildEventsMarker(date, events),
+                  ),),
+                 
+                  Container(
+                    decoration: myAddEventButtonDecoration(),
+                    child: IconButton(
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => AddNewEventScreen(selectedDay: selectedDay,)),
                         );
-                      }
-                      return null;
-                    },
-                  ), 
-                ),
+
+                        if(result is Map && result.containsKey('session')){
+                          Session newSession = result['session'];
+                          Event newEvent = result['event'];
+                          UserSubjectEvent newUserSubjectEvent = result['userSubjectEvent'];
+
+                          if (selectedEvents[selectedDay] == null) {
+                            selectedEvents[selectedDay] = [];
+                          }
+
+                          // Now it's safe to add the new event
+                          selectedEvents[selectedDay]!.add(newEvent);
+                          sessionsList.add(newSession);
+                          userSubjectEventLsit.add(newUserSubjectEvent);
+
+                          calendarBloc.add(addNewSession(
+                            newSession: newSession,
+                            newEvent: newEvent,
+                            newUserSubjectEvent : newUserSubjectEvent
+                          ));
+                                                  
+                          
+                          // To refresh the UI and display the new event
+                          setState(() {});
+
+                        } else if (result is Map && result.containsKey('evaluation')){
+                            Evaluation newEvaluation = result['evaluation'];
+                            Event newEvent = result['event'];
+                            UserSubjectEvent newUserSubjectEvent = result['userSubjectEvent'];
+                          
+                            if (selectedEvents[selectedDay] == null) {
+                              selectedEvents[selectedDay] = [];
+                            }
+
+                            // Now it's safe to add the new event
+                            selectedEvents[selectedDay]!.add(newEvent);
+                            evaluationList.add(newEvaluation);
+                            userSubjectEventLsit.add(newUserSubjectEvent);
+
+                            
+                            calendarBloc.add(addNewEvaluation(
+                              newEvaluation: newEvaluation,
+                              newEvent: newEvent,
+                              newUserSubjectEvent: newUserSubjectEvent
+                            ));
+
+                            setState(() {});
+                          } 
+                        },
+                      icon: const Icon(Icons.add),
+                      color: accentColor, // Color del ícono
+                    ),
+                  ),
                 ..._buildEventList(selectedDay)
               ],
             ), 
           ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AddNewEventScreen(selectedDay: selectedDay,)),
-              );
-
-              if(result is Map && result.containsKey('session')){
-                Session newSession = result['session'];
-                Event newEvent = result['event'];
-                UserSubjectEvent newUserSubjectEvent = result['userSubjectEvent'];
-
-                if (selectedEvents[selectedDay] == null) {
-                  selectedEvents[selectedDay] = [];
-                }
-
-                // Now it's safe to add the new event
-                selectedEvents[selectedDay]!.add(newEvent);
-                sessionsList.add(newSession);
-                userSubjectEventLsit.add(newUserSubjectEvent);
-
-                calendarBloc.add(addNewSession(
-                  newSession: newSession,
-                  newEvent: newEvent,
-                  newUserSubjectEvent : newUserSubjectEvent
-                ));
-                
-                
-                // To refresh the UI and display the new event
-                setState(() {});
-
-              } else if (result is Map && result.containsKey('evaluation')){
-                Evaluation newEvaluation = result['evaluation'];
-                Event newEvent = result['event'];
-                UserSubjectEvent newUserSubjectEvent = result['userSubjectEvent'];
               
-                if (selectedEvents[selectedDay] == null) {
-                  selectedEvents[selectedDay] = [];
-                }
-
-                // Now it's safe to add the new event
-                selectedEvents[selectedDay]!.add(newEvent);
-                evaluationList.add(newEvaluation);
-                userSubjectEventLsit.add(newUserSubjectEvent);
-
-                
-                calendarBloc.add(addNewEvaluation(
-                  newEvaluation: newEvaluation,
-                  newEvent: newEvent,
-                  newUserSubjectEvent: newUserSubjectEvent
-                ));
-
-                setState(() {});
-              
-              } else {
-              }
-
-              
-            },
-            label: Text("Add Event"),
-            icon: Icon(Icons.add),
-          ),
+      
+  
           bottomNavigationBar: SizedBox(
             height: 100,
             child: BottomNavigationBar(
