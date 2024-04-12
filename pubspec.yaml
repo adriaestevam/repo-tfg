@@ -55,6 +55,7 @@ dependencies:
   flutter_inset_box_shadow: ^1.0.8
   intl: ^0.18.1
   collection: ^1.18.0
+  genetically_evolving_neural_network: ^0.3.0
 
 dev_dependencies:
   flutter_test:
