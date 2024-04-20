@@ -151,7 +151,49 @@ currentDayDecoration() {
   );       
 }
 
-myAddEventButtonDecoration() {
+myRoundButtonDecoration() {
+  return BoxDecoration(
+    color: backgroundColor,
+    shape: BoxShape.circle,
+    boxShadow: [
+      BoxShadow(
+        color: Colors.grey.shade500,
+        offset: Offset(1,1),
+        blurRadius: 2,
+        spreadRadius: 1
+      ),
+      BoxShadow(
+        color: Colors.white,
+        offset: Offset(-1,-1),
+        blurRadius: 2,
+        spreadRadius: 1
+      )
+    ]
+  );       
+}
+
+myRoundButtonDecorationActive() {
+  return BoxDecoration(
+    color: primaryColor,
+    shape: BoxShape.circle,
+    boxShadow: [
+      BoxShadow(
+        color: Colors.grey.shade500,
+        offset: Offset(1,1),
+        blurRadius: 2,
+        spreadRadius: 1
+      ),
+      BoxShadow(
+        color: Colors.white,
+        offset: Offset(-1,-1),
+        blurRadius: 2,
+        spreadRadius: 1
+      )
+    ]
+  );       
+}
+
+myRoundButtonDecorationDesactive() {
   return BoxDecoration(
     color: backgroundColor,
     shape: BoxShape.circle,

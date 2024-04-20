@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:bloc/bloc.dart';
+import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tfg_v1/Data/Models/Evaluation.dart';
@@ -37,7 +38,7 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
     });
     on<readyToDisplayCalendar>((event, emit) async {
       try{
-        emit(displayCalendarInformation());
+        emit(displayCalendarInformation(userWantsPlan: event.userWantsPlan));
       } catch(error){
         print(error);
       }
@@ -81,11 +82,8 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
       try {
 
 
-        if(!await eventRepository.checkUserHasPlan()){
-          print('El user no té cap plan');
-
+        if(event.userWantsPlan){ 
           Map<String, dynamic> planData = await eventRepository.getPlanData();
-          print('Plan data obtained: $planData');
 
           // Extrayendo la información de planData
           List<StudyBlock> studyBlocks = planData['studyBlocks'] as List<StudyBlock>;
@@ -96,7 +94,6 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
           List<Evaluation> evaluations = planData['evaluations'] as List<Evaluation>;
           List<UserSubjectEvent> userSubjectEvents = planData['userSubjectEvents'] as List<UserSubjectEvent>;
 
-          print('Data obtained and extracted');
           
           //Create the ideal distribution
           Map<String,double> idealPriorityDistribution = createPriorityDistribution(subjects,userSubjects);
@@ -106,19 +103,31 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
           // Crear instancia de Planificator y generar plan
           Planificator planificator = Planificator();
           Map<String,dynamic> plan = await planificator.generatePlan(studyBlocks, subjects, userSubjects, events, evaluations, userSubjectEvents,idealPriorityDistribution,idealUrgencyDistribution);
-          print('Generated plan: $plan');
+    
 
           List<Event> eventsFromPlan = plan['events'] as List<Event>;
-          print('Events from plan: $eventsFromPlan');
+        
 
           List<Session> sessionsFromPlan = plan['sessions'] as List<Session>; // Ensure this key matches with what generarPlan returns
-          print('Sessions from plan: $sessionsFromPlan');
+
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          int? userId = prefs.getInt("currentUserId");
+
+          if (userId == null) {
+            throw Exception('No current user ID found');
+          }
+
+          DateTime initialDate = getNearestMonday();
+       
+          Plan planIdentificator = Plan(userId: userId,initialDate:initialDate);
 
           userEvents.addAll(eventsFromPlan);
           userSessions.addAll(sessionsFromPlan);
 
-          print('Final user events: $userEvents');
-          print('Final user sessions: $userSessions');
+          List<UserSubjectEvent>  userSubjectEventsFromPlan = await getUserSubjectEventsFromPlan(eventsFromPlan,subjects,userId);
+
+          await eventRepository.addPlan(eventsFromPlan,sessionsFromPlan,userSubjectEventsFromPlan,planIdentificator);
+
 
         } else {
           print('El user té un plan');
@@ -128,9 +137,15 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
 
 
         if(await eventRepository.checkUserHasEvents()){
+          
           List<Event> repositoryEvents = await eventRepository.uploadEvents();
           userEvaluations = await eventRepository.uploadEvaluations();
           List<Session> repositorySessions = await eventRepository.uploadSessions();
+          
+          for(Session session in repositorySessions){
+            print('este es el id de todas las sessions: ${session.id}');
+          }
+
 
           // Merge and remove duplicates
           for (var event in repositoryEvents) {
@@ -173,11 +188,13 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
              
             }
           }
+        } else {
+          print('User has none events');
         }
 
      
         
-        emit(uploadEventsToUI(mapOfEvents: mapOfEvents,evaluationList: userEvaluations,sessionList: userSessions));
+        emit(uploadEventsToUI(mapOfEvents: mapOfEvents,evaluationList: userEvaluations,sessionList: userSessions, userWantsPlan: event.userWantsPlan));
 
       } catch (error) {
         print(error);
@@ -185,6 +202,55 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
 
     });
   }
+}
+
+DateTime getNearestMonday() {
+  DateTime now = DateTime.now();
+  int currentWeekday = now.weekday;
+
+  // Dart's DateTime.weekday uses 1 for Monday and 7 for Sunday
+  // Calculate the number of days to the next Monday
+  int daysUntilMonday = DateTime.monday - currentWeekday;
+  if (daysUntilMonday <= 0) {
+    daysUntilMonday += 7; // Ensure it's always a future Monday unless today is Monday
+  }
+
+  DateTime nextMonday = now.add(Duration(days: daysUntilMonday));
+  return nextMonday;
+}
+
+
+List<UserSubjectEvent> getUserSubjectEventsFromPlan(List<Event> eventsFromPlan, List<Subject> subjects, int userId)  {
+  // Retrieve the current user ID from SharedPreferences
+  
+
+  List<UserSubjectEvent> userSubjectEvents = [];
+
+  for (Event event in eventsFromPlan) {
+    // Parse the subject name from event name assuming format 'session of subject <subject name>'
+    String eventNamePattern = r'Session of Subject (.+)';
+    RegExp regExp = RegExp(eventNamePattern);
+    var match = regExp.firstMatch(event.name);
+
+    if (match != null && match.groupCount >= 1) {
+      String subjectName = match.group(1)!; // Extracted subject name
+      // Find the corresponding subject ID
+      Subject? subject = subjects.firstWhereOrNull((sub) => sub.name == subjectName);
+      if (subject != null) {
+        // Create a UserSubjectEvent and add to the list
+        UserSubjectEvent userSubjectEvent = UserSubjectEvent(
+          userId: userId,
+          subjectId: subject.id,
+          eventId: event.id,
+        );
+        userSubjectEvents.add(userSubjectEvent);
+      } else {
+        print('no match found for usersubjectevent');
+      }
+    }
+  }
+
+  return userSubjectEvents;
 }
 
 Map<String, double> createUrgencyDistribution(List<Subject> subjects, List<Event> events, List<Evaluation> evaluations) {

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:tfg_v1/Data/Models/Evaluation.dart';
 import 'package:tfg_v1/Data/Models/Event.dart';
+import 'package:tfg_v1/Data/Models/Plan.dart';
 import 'package:tfg_v1/Data/Models/Session.dart';
 import 'package:tfg_v1/Data/Models/User-Subject-Event.dart';
 import 'package:tfg_v1/Data/Models/User-Subject.dart';
@@ -35,7 +36,7 @@ class DataService {
     String databasesPath = await getDatabasesPath();
     print(databasesPath);
     print("Inicialización de la base de datos"+databasesPath);
-    String path = join(databasesPath, 'v2.db');
+    String path = join(databasesPath, 'v3.db');
 
     return await openDatabase(path, version: 1, onCreate: (Database db, int version) async {
       // Crear tabla de Usuarios (ya existente)
@@ -108,12 +109,9 @@ class DataService {
       await db.execute('''
         CREATE TABLE plan(
           userId INTEGER,
-          subjectId INTEGER,
-          sessionId INTEGER,
-          PRIMARY KEY (userId, subjectId, sessionId),
-          FOREIGN KEY(userId) REFERENCES users(id),
-          FOREIGN KEY(subjectId) REFERENCES subjects(id),
-          FOREIGN KEY(sessionId) REFERENCES session(id)
+          initialDate TEXT,
+          PRIMARY KEY (userId, initialDate),
+          FOREIGN KEY(userId) REFERENCES users(id)
         )
       ''');
 
@@ -672,8 +670,16 @@ class DataService {
     return userSessions; 
   }
 
-  Future<List<UserSubjectEvent>> uploadUserSubjectEvents(int userId) async {
+  Future<List<UserSubjectEvent>> uploadUserSubjectEvents() async {
     final db = await database;
+
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    int? userId = prefs.getInt("currentUserId");
+
+    if (userId == null) {
+      print('No current user ID found');
+      return throw Exception('No user found for user subject event');
+    }
     final List<Map<String, dynamic>> maps = await db.query(
       'user_subject_event',
       where: 'userId = ?',
@@ -851,7 +857,7 @@ class DataService {
     print('Evaluations retrieved: ${evaluations.length} items');
 
     // Obtener UserSubjectEvents del usuario actual
-    List<UserSubjectEvent> userSubjectEvents = await uploadUserSubjectEvents(userId);
+    List<UserSubjectEvent> userSubjectEvents = await uploadUserSubjectEvents();
     print('UserSubjectEvents retrieved: ${userSubjectEvents.length} items');
 
     Map<String, dynamic> planData = {
@@ -867,6 +873,60 @@ class DataService {
 
       return planData;
   }
+
+  Future<void> addPlan(List<Event> eventsFromPlan, List<Session> sessionsFromPlan, List<UserSubjectEvent> userSubjectEventsFromPlan, Plan plan) async {
+    final db = await database;  // Ensure database is initialized and ready
+  
+
+    // Begin a batch to perform multiple insertions atomically
+    Batch batch = db.batch();
+
+    // Insert the Plan into the 'plans' table
+    // Ensure the date is stored in ISO-8601 string format (YYYY-MM-DDTHH:MM:SS.sssZ)
+    batch.insert(
+      'plan',
+      {
+        'userId': plan.userId,
+        'initialDate': plan.initialDate.toIso8601String()
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace
+    );
+
+    // Insert each Event into the 'event' table
+    for (Event event in eventsFromPlan) {
+      batch.insert(
+        'event',
+        event.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace
+      );
+    }
+
+    // Insert each Session into the 'session' table
+    for (Session session in sessionsFromPlan) {
+      batch.insert(
+        'session',
+        session.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace
+      );
+    }
+
+    // Insert each UserSubjectEvent into the 'user_subject_event' table
+    for (UserSubjectEvent userSubjectEvent in userSubjectEventsFromPlan) {
+      batch.insert(
+        'user_subject_event',
+        userSubjectEvent.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace
+      );
+    }
+
+    // Commit the batch
+    await batch.commit(noResult: true);  // noResult: true can improve performance when the results are not needed
+
+    print('Plan data has been successfully added to the database.');
+
+  }
+
+
 
 }
 

@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:tfg_v1/Data/Models/Evaluation.dart';
+import 'package:tfg_v1/Data/Models/Plan.dart';
 import 'package:tfg_v1/Data/Models/Session.dart';
 import 'package:tfg_v1/Data/Models/User-Subject-Event.dart';
 import 'package:tfg_v1/Data/Models/Users.dart';
@@ -51,8 +52,8 @@ class EventRepository {
     _dataService.deleteSessionEvent(sessionId);
   }
 
-  DeleteEvaluationEvent(int sessionId) {
-    _dataService.deleteEvaluationEvent(sessionId);
+  DeleteEvaluationEvent(int evaluationId) {
+    _dataService.deleteEvaluationEvent(evaluationId);
   }
 
   updateEvaluation(Event newEvent, Evaluation newEvaluation, UserSubjectEvent newUserSubjectEvent) {
@@ -68,6 +69,14 @@ class EventRepository {
   }
   getPlanData() {
     return _dataService.getUserPlanData();
+  }
+
+  uploadUserSubjectEvents() {
+    return _dataService.uploadUserSubjectEvents();
+  }
+
+  addPlan(List<Event> eventsFromPlan, List<Session> sessionsFromPlan, List<UserSubjectEvent> userSubjectEventsFromPlan, Plan planIdentificator) {
+    _dataService.addPlan(eventsFromPlan,sessionsFromPlan,userSubjectEventsFromPlan,planIdentificator);
   }
 
 }

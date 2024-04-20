@@ -53,9 +53,15 @@ class addNewSession extends CalendarEvent{
 
 }
 
-class uploadEvents extends CalendarEvent{}
+class uploadEvents extends CalendarEvent{
+  bool userWantsPlan;
+  uploadEvents({required this.userWantsPlan});
+}
 
-class readyToDisplayCalendar extends CalendarEvent{}
+class readyToDisplayCalendar extends CalendarEvent{
+  bool userWantsPlan;
+  readyToDisplayCalendar({required this.userWantsPlan});
+}
 
 class DeleteSessionEvent extends CalendarEvent{
   final int sessionId;
@@ -66,3 +72,4 @@ class DeleteEvaluationEvent extends CalendarEvent{
   final int evaluationId;
   DeleteEvaluationEvent({required this.evaluationId});
 }
+

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:tfg_v1/Data/DataService.dart';
 import 'package:tfg_v1/Data/Repositories/EventRepository.dart';
+import 'package:tfg_v1/Domain/AcademiaBloc/academia_bloc.dart';
 import 'package:tfg_v1/Domain/CalendarBloc/calendar_bloc.dart';
 import 'package:tfg_v1/Domain/LoginBloc/login_bloc.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
@@ -76,6 +77,11 @@ class MyApp extends StatelessWidget {
           ), 
           BlocProvider<CalendarBloc>(
             create: (context) => CalendarBloc(
+              eventRepository: RepositoryProvider.of<EventRepository>(context),
+            ),
+          ),
+          BlocProvider<AcademiaBloc>(
+            create: (context) => AcademiaBloc(
               eventRepository: RepositoryProvider.of<EventRepository>(context),
             ),
           ),       

@@ -28,10 +28,6 @@ class Planificator {
     Map<String, double> idealPriorityDistribution, 
     Map<String, double> idealUrgencyDistribution) async {
 
-      studyBlocks;
-
-
-    Plan plan = Plan(userId: 0, sessionId: 0); //Plan
     Map<String,dynamic> mapOfLists = {}; //combination of both list
 
     //variables for evolutive nn
@@ -102,11 +98,12 @@ class Planificator {
       List<double> winningPlan = getPlan(topScoringEntity,winningGeneration,inputsForNN);
   
       List<String> winningPlanWithNames = decodePlan(winningPlan,subjects,numberOfBits);
+      DateTime nextMonday = getNextMonday();
 
       var results = await createEventsAndSessions(
         winningPlanWithNames, // Decoded plan from your evolution algorithm
         studyBlocks,          // List of available study blocks
-        DateTime.now().add(Duration(days: 7)) // Assuming the start date is next Monday
+        nextMonday // Assuming the start date is next Monday
       );
 
 
@@ -130,6 +127,16 @@ class Planificator {
   }
 }
 
+DateTime getNextMonday() {
+  DateTime now = DateTime.now();
+  int daysToNextMonday = 8 - now.weekday; // Monday is 1 in Dart's DateTime
+  if (now.weekday == 1) { // If today is Monday
+    daysToNextMonday = 7; // Set to next Monday instead of today
+  }
+  return now.add(Duration(days: daysToNextMonday));
+}
+
+
 Future<Map<String, List<dynamic>>> createEventsAndSessions(
   List<String> plan, 
   List<StudyBlock> studyBlocks, 
@@ -139,8 +146,8 @@ Future<Map<String, List<dynamic>>> createEventsAndSessions(
   List<Session> sessions = [];
 
   Map<String, List<StudyBlock>> weeklyBlocks = groupBlocksByWeekday(studyBlocks);
-  int eventId = 1;
-  int sessionId = 1;
+  int eventId = Random().nextInt(10000);
+  int sessionId = eventId;
 
   DateTime currentDate = startDate;
   int planIndex = 0;
@@ -167,11 +174,11 @@ Future<Map<String, List<dynamic>>> createEventsAndSessions(
         DateTime sessionEnd = blockStart.add(Duration(minutes: 59));
         String subjectName = plan[planIndex];
         
-        events.add(Event(id: eventId, name: 'Auto Session of Subject $subjectName', isDone: false));
+        events.add(Event(id: eventId, name: 'Session of Subject $subjectName', isDone: false));
         sessions.add(Session(id: sessionId, startTime: blockStart, endTime: sessionEnd));
 
-        eventId++;
-        sessionId++;
+        eventId = Random().nextInt(10000);
+        sessionId = eventId;
         planIndex++;
         blockStart = sessionEnd.add(Duration(minutes: 1)); // Un minuto de pausa entre sesiones
       }

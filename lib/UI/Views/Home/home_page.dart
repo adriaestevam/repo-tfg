@@ -329,7 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return BlocBuilder<CalendarBloc,CalendarState>(builder: (context, state) {
       if(state is CalendarInitial){
     
-        calendarBloc.add(uploadEvents());
+        calendarBloc.add(uploadEvents(userWantsPlan: false));
         return Scaffold(
           appBar: AppBar(
             title: const Text('Cargando datos de la base de datos de eventos'),
@@ -355,7 +355,7 @@ class _HomeScreenState extends State<HomeScreen> {
         evaluationList = state.evaluationList;
         sessionsList = state.sessionList;
         
-        calendarBloc.add(readyToDisplayCalendar());
+        calendarBloc.add(readyToDisplayCalendar(userWantsPlan: state.userWantsPlan));
         return Scaffold(
           body: Center(
             child: Column(
@@ -384,9 +384,9 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(Icons.account_circle),
               onPressed: () {
                 Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfileScreen()), 
-              );
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfileScreen()), 
+                );
               },
             ),
             actions: <Widget>[
@@ -400,7 +400,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           body: SingleChildScrollView(
             child:Column(
-              children: [
+              children: [                
                 Padding(
                   padding:  const EdgeInsets.only(left: 8.0, right: 8),
                   child: Card(
@@ -469,68 +469,82 @@ class _HomeScreenState extends State<HomeScreen> {
                       ), 
                     ),
                   ),),
-                 
-                  Container(
-                    decoration: myAddEventButtonDecoration(),
-                    child: IconButton(
-                      onPressed: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => AddNewEventScreen(selectedDay: selectedDay,)),
-                        );
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        decoration: myRoundButtonDecoration(),
+                        child: IconButton(
+                          onPressed: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => AddNewEventScreen(selectedDay: selectedDay,)),
+                            );
 
-                        if(result is Map && result.containsKey('session')){
-                          Session newSession = result['session'];
-                          Event newEvent = result['event'];
-                          UserSubjectEvent newUserSubjectEvent = result['userSubjectEvent'];
+                            if(result is Map && result.containsKey('session')){
+                              Session newSession = result['session'];
+                              Event newEvent = result['event'];
+                              UserSubjectEvent newUserSubjectEvent = result['userSubjectEvent'];
 
-                          if (selectedEvents[selectedDay] == null) {
-                            selectedEvents[selectedDay] = [];
-                          }
+                              if (selectedEvents[selectedDay] == null) {
+                                selectedEvents[selectedDay] = [];
+                              }
 
-                          // Now it's safe to add the new event
-                          selectedEvents[selectedDay]!.add(newEvent);
-                          sessionsList.add(newSession);
-                          userSubjectEventLsit.add(newUserSubjectEvent);
+                              // Now it's safe to add the new event
+                              selectedEvents[selectedDay]!.add(newEvent);
+                              sessionsList.add(newSession);
+                              userSubjectEventLsit.add(newUserSubjectEvent);
 
-                          calendarBloc.add(addNewSession(
-                            newSession: newSession,
-                            newEvent: newEvent,
-                            newUserSubjectEvent : newUserSubjectEvent
-                          ));
-                                                  
-                          
-                          // To refresh the UI and display the new event
-                          setState(() {});
+                              calendarBloc.add(addNewSession(
+                                newSession: newSession,
+                                newEvent: newEvent,
+                                newUserSubjectEvent : newUserSubjectEvent
+                              ));
+                                                      
+                              setState(() {});
 
-                        } else if (result is Map && result.containsKey('evaluation')){
-                            Evaluation newEvaluation = result['evaluation'];
-                            Event newEvent = result['event'];
-                            UserSubjectEvent newUserSubjectEvent = result['userSubjectEvent'];
-                          
-                            if (selectedEvents[selectedDay] == null) {
-                              selectedEvents[selectedDay] = [];
+                            } else if (result is Map && result.containsKey('evaluation')){
+                                Evaluation newEvaluation = result['evaluation'];
+                                Event newEvent = result['event'];
+                                UserSubjectEvent newUserSubjectEvent = result['userSubjectEvent'];
+                              
+                                if (selectedEvents[selectedDay] == null) {
+                                  selectedEvents[selectedDay] = [];
+                                }
+
+                                // Now it's safe to add the new event
+                                selectedEvents[selectedDay]!.add(newEvent);
+                                evaluationList.add(newEvaluation);
+                                userSubjectEventLsit.add(newUserSubjectEvent);
+
+                                
+                                calendarBloc.add(addNewEvaluation(
+                                  newEvaluation: newEvaluation,
+                                  newEvent: newEvent,
+                                  newUserSubjectEvent: newUserSubjectEvent
+                                ));
+
+                                setState(() {});
+                              } 
+                            },
+                          icon: const Icon(Icons.add),
+                          color: accentColor, // Color del ícono
+                        ),
+                      ),
+                      SizedBox(width: 20,),
+                      Container(
+                        decoration: state.userWantsPlan ? myRoundButtonDecorationActive() : myRoundButtonDecorationDesactive(),
+                        child: IconButton(
+                          onPressed: (){
+                            if (!state.userWantsPlan) {
+                              calendarBloc.add(uploadEvents(userWantsPlan: true));
                             }
-
-                            // Now it's safe to add the new event
-                            selectedEvents[selectedDay]!.add(newEvent);
-                            evaluationList.add(newEvaluation);
-                            userSubjectEventLsit.add(newUserSubjectEvent);
-
-                            
-                            calendarBloc.add(addNewEvaluation(
-                              newEvaluation: newEvaluation,
-                              newEvent: newEvent,
-                              newUserSubjectEvent: newUserSubjectEvent
-                            ));
-
-                            setState(() {});
-                          } 
-                        },
-                      icon: const Icon(Icons.add),
-                      color: accentColor, // Color del ícono
-                    ),
-                  ),
+                          },
+                          icon: Icon(state.userWantsPlan ? Icons.check : Icons.sync),
+                          color: state.userWantsPlan ? backgroundColor : primaryColor
+                        ),
+                      ),
+                    ],), 
                 ..._buildEventList(selectedDay)
               ],
             ), 
@@ -588,7 +602,6 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: (index) {
                 switch(index){
                   case 0: navigatorBloc.add(GoToHomeEvent());
-                  calendarBloc.add(uploadEvents());
                     break;
                   case 1: navigatorBloc.add(GoToObjectivesEvent());
                     break;
