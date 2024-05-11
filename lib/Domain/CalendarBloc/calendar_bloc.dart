@@ -21,7 +21,7 @@ part 'calendar_event.dart';
 part 'calendar_state.dart';
 
 class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
-  CalendarBloc({required EventRepository eventRepository}) : super(CalendarInitial()) {
+  CalendarBloc({required EventRepository eventRepository, required UserRepository userRepository}) : super(CalendarInitial()) {
     on<addNewEvaluation>((event, emit) async {
       try{
         await eventRepository.addNewEvaluation(event.newEvaluation, event.newEvent, event.newUserSubjectEvent);
@@ -201,7 +201,151 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
       }
 
     });
-  }
+    on<getRetrosInformation>((event, emit) async {
+      try {
+        // Fetch data from the repository
+        List<Event> events = await eventRepository.uploadEvents();
+        List<Session> sessions = await eventRepository.uploadSessions();
+        List<Evaluation> evaluations = await eventRepository.uploadEvaluations();
+
+        // Determine the start of the week (last Monday)
+        DateTime now = DateTime.now();
+        DateTime lastMonday = now.subtract(Duration(days:7));
+
+        // Filter sessions and evaluations
+        Map<int, Session> relevantSessions = {};
+        Map<int, Evaluation> relevantEvaluations = {};
+
+        for (var session in sessions) {
+          if (session.startTime.isAfter(lastMonday) && session.startTime.isBefore(now)) {
+            relevantSessions[session.id] = session;
+          }
+        }
+
+        for (var evaluation in evaluations) {
+          if (evaluation.date.isAfter(lastMonday) && evaluation.date.isBefore(now)) {
+            relevantEvaluations[evaluation.id] = evaluation;
+          }
+        }
+
+        // Filter events based on 'done' status and match them with sessions or evaluations
+        List<Event> matchedEvents = [];
+        List<Session> matchedSessions = [];
+        List<Evaluation> matchedEvaluations = [];
+
+        for (var event in events) {
+          if (!event.isDone) {
+            Session? session = relevantSessions[event.id];
+            Evaluation? evaluation = relevantEvaluations[event.id];
+
+            if (session != null || evaluation != null) {
+              matchedEvents.add(event);
+              if (session != null) {
+                matchedSessions.add(session);
+              }
+              if (evaluation != null) {
+                matchedEvaluations.add(evaluation);
+              }
+            }
+          }
+        }
+
+        // Emit the result or use another way to display the information
+        emit(displayRestrosInformation(events: matchedEvents,sessions: matchedSessions, evaluations: matchedEvaluations));
+        
+      } catch (error) {
+        print(error);
+      }
+    });
+    on<SubmitEvaluationChangesEvent>((event, emit) async {
+      try{
+        Map<int, double> updatedGrades = event.updatedGrades;
+        Map<int, bool> selectedSessions = event.selectedSessions;
+
+        await eventRepository.saveChangesRetros(updatedGrades,selectedSessions);
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        int? userId = prefs.getInt("currentUserId");
+
+        if (userId == null) {
+          throw Exception('No current user found');
+        }
+        
+        print('Current User ID: $userId');
+        List<Subject> subjects = await userRepository.getSubjectsByUserId(userId);
+        List<Evaluation> evaluations = await eventRepository.uploadEvaluations();
+        List<Event> events = await eventRepository.uploadEvents();
+        List<UserSubjectEvent> use = await eventRepository.uploadUserSubjectEvents();
+
+        for (Subject subject in subjects) {
+          List<Map<String, dynamic>> formulaElements = subject.formula.split(', ')
+            .map((e) {
+              var parts = e.split(': ');
+              return {
+                'name': parts[0].trim(),
+                'weight': double.parse(parts[1].replaceAll('%', '').trim()) / 100
+              };
+            }).toList();
+
+          print('Parsed formula for ${subject.name}: $formulaElements');
+
+          double weightedScore = 0.0;
+          double totalWeight = 0.0;
+          
+          for (Evaluation evaluation in evaluations) {
+            UserSubjectEvent useEvent;
+            Event event;
+            Map<String, dynamic> formulaPart;
+
+            try {
+              useEvent = use.firstWhere((u) => u.eventId == evaluation.id && u.subjectId == subject.id);
+            } catch (e) {
+              // Evento aún no ha ocurrido o no está registrado, continuar al siguiente
+              continue;
+            }
+
+            try {
+              event = events.firstWhere((e) => e.id == evaluation.id);
+            } catch (e) {
+              // Evento no encontrado, continuar al siguiente
+              continue;
+            }
+
+            // Normalizando el nombre del evento
+            String eventName = event.name.split(' of ')[0].trim();
+
+            try {
+              formulaPart = formulaElements.firstWhere((elem) => elem['name'] == eventName);
+            } catch (e) {
+              // Parte de la fórmula no encontrada, continuar al siguiente
+              continue;
+            }
+
+            if (evaluation.grade < 0 || evaluation.grade > 10) {
+              // Nota inválida, continuar al siguiente
+              continue;
+            }
+
+            weightedScore += evaluation.grade * formulaPart['weight'];
+            totalWeight += formulaPart['weight'];
+            print('Processed grade ${evaluation.grade} for ${eventName} with weight ${formulaPart['weight']}');
+          }
+
+          if (totalWeight > 0) {
+            weightedScore /= totalWeight;
+          }
+          int feedback = (weightedScore >= 8) ? 3 : (weightedScore >= 5) ? 2 : 1;
+          print("Feedback for Subject ${subject.name}: $feedback");
+
+          await userRepository.updateFeedbackFromSubject(subject.id,feedback);
+        }
+
+
+      } 
+      catch(error){
+        print(error);
+      }
+    });
+  } 
 }
 
 DateTime getNearestMonday() {

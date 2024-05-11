@@ -1,5 +1,5 @@
 class University {
-  final int id;      
+  int id;      
   final String name;   // Nombre de la universidad
 
   University({

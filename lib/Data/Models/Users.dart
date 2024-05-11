@@ -1,7 +1,7 @@
 import 'package:tfg_v1/Data/Models/university.dart';
 
 class User {
-  final int id;       // Asumiendo que el id es un entero
+  int id;       // Asumiendo que el id es un entero
   final int universityId;
   final String name;
   final String email;
@@ -16,7 +16,8 @@ class User {
   });
 
   // Convierte un objeto User a un Map. Útil para insertar en la base de datos
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> 
+  toMap() {
     return {
       'id': id,
       'universityId':universityId,

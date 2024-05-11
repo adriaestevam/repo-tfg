@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tfg_v1/Domain/CalendarBloc/calendar_bloc.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
+import 'package:tfg_v1/UI/Utilities/AppTheme.dart';
 import 'package:tfg_v1/UI/Utilities/app_colors.dart';
 import 'package:tfg_v1/UI/Views/Home/home_page.dart';
+import 'package:tfg_v1/UI/Views/RetrospectiveScreen.dart';
 import 'package:tfg_v1/UI/Views/objectives_page.dart';
 import 'package:tfg_v1/UI/Views/subjects_page.dart';
 
@@ -24,6 +27,8 @@ class NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     final NavigatorBloc navigatorBloc = BlocProvider.of<NavigatorBloc>(context);
+    final CalendarBloc calendarBloc = BlocProvider.of<CalendarBloc>(context);
+
     
     return Scaffold(
       appBar: AppBar(
@@ -49,9 +54,45 @@ class NotificationsScreenState extends State<NotificationsScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildFolders(),
-          
+          Container(
+            padding: EdgeInsets.all(16),
+            margin: EdgeInsets.all(8),
+            decoration: myBoxDecoration(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Realizar la retrospectiva de esta semana',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: primaryColor, // Cambia esto según tu paleta de colores
+                  ),
+                ),
+                SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      calendarBloc.add(getRetrosInformation());
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => RetrospectiveStepper(),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      primary: accentColor, // Color del botón
+                    ),
+                    child: Text('Empezar'),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
+
       bottomNavigationBar: SizedBox(
         height: 100,
         child: BottomNavigationBar(
@@ -101,7 +142,9 @@ class NotificationsScreenState extends State<NotificationsScreen> {
           // ... otras propiedades como currentIndex, onTap, etc
           onTap: (index) {
             switch(index){
-              case 0: navigatorBloc.add(GoToHomeEvent());
+              case 0: 
+                navigatorBloc.add(GoToHomeEvent());
+                calendarBloc.add(uploadEvents(userWantsPlan: false));navigatorBloc.add(GoToHomeEvent());
                 break;
               case 1: navigatorBloc.add(GoToObjectivesEvent());
                 break;

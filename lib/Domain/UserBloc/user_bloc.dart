@@ -24,9 +24,10 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
         // Obtener las materias del usuario
         List<Subject> subjects = await userRepository.getSubjectsByUserId(user.id);
+        List<StudyBlock> studyBlocks = await userRepository.getStudyBlocksByUserId(user.id);
 
 
-        emit(displayInformation(user: user,university: university, subjects: subjects));
+        emit(displayInformation(user: user,university: university, subjects: subjects,studyBlocks: studyBlocks));
 
       }catch(error){
         print('error');
@@ -51,6 +52,20 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         }
 
       
+
+        emit(userSuccessfullyUpdated());
+
+
+      }catch(error){
+        print('error');
+        print(error);
+      }       
+    });  
+    on<updateBlock>((event, emit) async {
+      try{
+        
+        await userRepository.deleteStudyBlock(event.oldblock);
+        await userRepository.addNewStudyBlock(event.newBlock);
 
         emit(userSuccessfullyUpdated());
 

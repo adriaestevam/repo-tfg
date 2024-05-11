@@ -73,3 +73,13 @@ class DeleteEvaluationEvent extends CalendarEvent{
   DeleteEvaluationEvent({required this.evaluationId});
 }
 
+class getRetrosInformation extends CalendarEvent{}
+
+class SubmitEvaluationChangesEvent extends CalendarEvent {
+  final Map<int, double> updatedGrades;
+  final Map<int, bool> selectedSessions;
+
+  SubmitEvaluationChangesEvent(this.updatedGrades, this.selectedSessions);
+}
+
+

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class StudyBlock {
-  final int id;           // Identificador único del bloque de estudio
+  int id;           // Identificador único del bloque de estudio
   final int userId;       // Clave foránea del usuario
   final String day;       // Día de la semana (Lunes, Martes, etc.)
   final TimeOfDay startTime; // Hora de inicio

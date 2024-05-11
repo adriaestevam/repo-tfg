@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
 import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tfg_v1/Data/Models/StudyBloc.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_event.dart';
 import 'package:tfg_v1/Domain/UserBloc/user_event.dart';
 import 'package:tfg_v1/Domain/UserBloc/user_state.dart';
@@ -37,7 +39,7 @@ class ProfileScreen extends StatelessWidget {
                     onPressed: (){
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => EditProfileScreen(user: state.user)), // Reemplaza PerfilScreen() con el nombre de tu pantalla de perfil
+                        MaterialPageRoute(builder: (context) => EditProfileScreen(user: state.user,studyBlocks: state.studyBlocks,)), 
                       );
                     },
                   ),
@@ -221,6 +223,28 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 20),
+                  Container(
+                    decoration: myBoxDecoration(),
+                    padding: EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Bloques de estudio',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: primaryColor,
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        ...['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) {
+                          return buildDayStudyBlock(day, state.studyBlocks,Size(MediaQuery.of(context).size.width, 50)); // Assuming studyBlocks is available
+                        }).toList()
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 10,),
                   myGreenButton(
                     onPressed: () {
                       print("object");
@@ -264,12 +288,28 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 }
-class EditProfileScreen extends StatelessWidget {
-  final User user;
 
-  EditProfileScreen({required this.user});
+class EditProfileScreen extends StatefulWidget {
+  final User user;
+  final List<StudyBlock> studyBlocks;
+
+  EditProfileScreen({required this.user, required this.studyBlocks});
 
   @override
+  _EditProfileScreenState createState() => _EditProfileScreenState();
+}
+
+class _EditProfileScreenState extends State<EditProfileScreen> {
+  late List<StudyBlock> studyBlocks;
+  late User user;
+
+  @override
+  void initState() {
+    super.initState();
+    studyBlocks = widget.studyBlocks;
+    user = widget.user;
+  }
+
   Widget build(BuildContext context) {
     String initialName = user.name;
     String initialMail = user.email;
@@ -281,6 +321,19 @@ class EditProfileScreen extends StatelessWidget {
     late String currentName = '';
     late String currentMail = '';
     late String currentPassword = '';
+
+    Map<String, int> dayOrder = {
+    'Monday': 1,
+    'Tuesday': 2,
+    'Wednesday': 3,
+    'Thursday': 4,
+    'Friday': 5,
+    'Saturday': 6,
+    'Sunday': 7,
+  };
+
+  // Sort study blocks according to the day order
+  studyBlocks.sort((a, b) => dayOrder[a.day]!.compareTo(dayOrder[b.day]!));
 
     return BlocBuilder<UserBloc,UserState>(
       builder: (context,state){
@@ -316,6 +369,38 @@ class EditProfileScreen extends StatelessWidget {
                     currentPassword = value; // Actualizar el valor actual de la contraseña
                   },
                 ),
+                SizedBox(height: 20),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          'Bloques de estudio',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: primaryColor,
+                          ),
+                        ),
+                      ),
+                      ...studyBlocks.map((block) {
+                        return ListTile(
+                          title: Text('${block.day}'),
+                          subtitle: Text('Study from ${block.startTime.format(context)} to ${block.endTime.format(context)}'),
+                          onTap: () async {
+                              var updatedBlock = await _editStudyBlockTimes(context, block,userBloc);
+                              if (updatedBlock != null) {
+                                setState(() {
+                                  int index = studyBlocks.indexOf(block);
+                                  studyBlocks[index] = updatedBlock;
+                                });
+                              }
+                            },
+                        );
+                      }).toList(),
+                    ],
+                  ),
                 SizedBox(height: 20),
                 Row(
                   children: [
@@ -373,3 +458,46 @@ class EditProfileScreen extends StatelessWidget {
     );
   }
 }
+
+
+
+  Future<StudyBlock> _editStudyBlockTimes(BuildContext context, StudyBlock block, UserBloc userBloc) async {
+    TimeOfDay? newStartTime = await showTimePicker(
+      context: context,
+      initialTime: block.startTime,
+    );
+
+    if (newStartTime != null) {
+      TimeOfDay? newEndTime = await showTimePicker(
+        context: context,
+        initialTime: block.endTime,
+      );
+
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      int? userId = prefs.getInt("currentUserId");
+
+      if (userId == null) {
+        print('No current user ID found');
+        throw Exception('No current user found');
+      }
+
+      if (newEndTime != null) {
+        StudyBlock updatedBlock = StudyBlock(
+          id: block.id,
+          userId: userId!, 
+          day: block.day,
+          startTime: newStartTime,
+          endTime: newEndTime, 
+        );
+
+        userBloc.add(updateBlock(oldblock: block,newBlock: updatedBlock));
+        return updatedBlock;
+      } else {
+        return throw Exception('Error when creating study block');
+      } 
+    } else {
+      return throw Exception('Error when creating study block');
+    }
+  }
+
+

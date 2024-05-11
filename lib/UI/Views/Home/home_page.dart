@@ -177,6 +177,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     setState(() {});
                   },
                 ),
+                if(event.isDone)
+                  Positioned(
+                    right: 12,
+                    bottom: 10,
+                    child: Icon(Icons.check_circle, color: primaryColor, size: 20)
+                  )
               ],
             ),
           ),
@@ -274,6 +280,12 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
+          if(event.isDone)
+            Positioned(
+              right: 12,
+              bottom: 10,
+              child: Icon(Icons.check_circle, color: primaryColor, size: 20)
+            )
         ],
       ),
     );
@@ -601,7 +613,9 @@ class _HomeScreenState extends State<HomeScreen> {
               // ... otras propiedades como currentIndex, onTap, etc
               onTap: (index) {
                 switch(index){
-                  case 0: navigatorBloc.add(GoToHomeEvent());
+                  case 0: 
+                    navigatorBloc.add(GoToHomeEvent());
+                    calendarBloc.add(uploadEvents(userWantsPlan: false));
                     break;
                   case 1: navigatorBloc.add(GoToObjectivesEvent());
                     break;

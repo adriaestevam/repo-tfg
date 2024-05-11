@@ -8,7 +8,6 @@ import 'package:tfg_v1/Data/Models/Plan.dart';
 import 'package:tfg_v1/Data/Models/Session.dart';
 import 'package:tfg_v1/Data/Models/User-Subject-Event.dart';
 import 'package:tfg_v1/Data/Models/User-Subject.dart';
-
 import 'package:tfg_v1/Data/Models/StudyBloc.dart';
 import 'package:tfg_v1/Data/Models/Subject.dart';
 import 'package:tfg_v1/Data/Models/University.dart';
@@ -926,7 +925,134 @@ class DataService {
 
   }
 
+  Future<void> deleteStudyBlock(StudyBlock oldBlock) async {
+    final db = await database; // Ensure that the database instance is obtained
 
+    // Delete the study block from the 'study_block' table
+    int result = await db.delete(
+      'study_block',
+      where: 'id = ?', // Use a WHERE clause to specify which study block to delete
+      whereArgs: [oldBlock.id] // Provide the ID of the study block to delete
+    );
 
+    if (result != 0) {
+      print('Study block deleted successfully');
+    } else {
+      print('Error deleting study block');
+    }
+  }
+
+  Future<void> addNewStudyBlock(StudyBlock newBlock) async {
+    final db = await database; // Ensure that the database instance is obtained
+
+    // Insert the new study block into the 'study_block' table
+    int id = await db.insert(
+      'study_block',
+      newBlock.toMap(), // Convert the StudyBlock instance into a Map
+      conflictAlgorithm: ConflictAlgorithm.replace // Handle any conflicts by replacing the old data
+    );
+
+    if (id != 0) {
+      print('Study block added successfully with id $id');
+    } else {
+      print('Failed to add study block');
+    }
+  }
+
+  Future<void> saveChangesRetros(Map<int, double> updatedGrades, Map<int, bool> selectedSessions) async {
+    final db = await database;
+
+    // Begin a transaction to ensure all operations are executed together
+    await db.transaction((txn) async {
+      // Update evaluation grades and mark the corresponding event as done in one loop
+      for (var entry in updatedGrades.entries) {
+        // Update evaluation grades based on updatedGrades map
+        await txn.update(
+          'evaluation',
+          {'grade': entry.value},
+          where: 'id = ?',
+          whereArgs: [entry.key]
+        );
+
+        // Mark the corresponding event as done, regardless of its current isDone status
+        await txn.update(
+          'event',
+          {'isDone': 1}, // Set isDone to true (1) for the corresponding event
+          where: 'id = ?',
+          whereArgs: [entry.key]
+        );
+      }
+
+      for (var entry in selectedSessions.entries) {
+        if (entry.value) { // Only update if the session is selected
+          await txn.update(
+            'event',
+            {'isDone': 1}, // Assuming 'isDone' is stored as INTEGER (1 for true)
+            where: 'id = ?',
+            whereArgs: [entry.key]
+          );
+        }
+      }
+    });
+
+    print("Changes to evaluations and events have been saved successfully.");
+  }
+
+  Future<void> updateFeedbackFromSubject(int subjectId, int feedback) async {
+    final db = await database; // Asegúrate de que la instancia de la base de datos está obtenida
+
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    int? userId = prefs.getInt("currentUserId");
+
+    if (userId == null) {
+      print('No current user ID found');
+      return; // Si no hay usuario actual, termina la función prematuramente
+    }
+
+    // Comienza una transacción para asegurar que la actualización es atómica
+    await db.transaction((txn) async {
+      int count = await txn.update(
+        'user_subject', // Asume que 'user_subject' es el nombre de la tabla
+        {'feedback': feedback}, // El nuevo valor para el campo 'feedback'
+        where: 'userId = ? AND subjectId = ?',
+        whereArgs: [userId, subjectId]
+      );
+
+      if (count != 0) {
+        print('Feedback updated successfully for subject ID $subjectId and user ID $userId');
+      } else {
+        print('Failed to update feedback or no matching record found');
+      }
+    });
+  }
+
+  Future<int> getUserCurrentFeedback(int subjectId) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    int? userId = prefs.getInt("currentUserId");
+
+    if (userId == null) {
+      throw Exception("No current user ID found");
+    }
+
+    final db = await database; // Ensure you await the database here
+
+    // Now that db is a Database instance, you can use the query method
+    List<Map<String, dynamic>> results = await db.query(
+      'user_subject', // Name of the table
+      columns: ['feedback'], // Column to retrieve
+      where: 'userId = ? AND subjectId = ?', // Condition to match the correct user_subject
+      whereArgs: [userId, subjectId], // Arguments for the WHERE clause
+    );
+
+    if (results.isNotEmpty) {
+      // Return the feedback value if found
+      return results.first['feedback'];
+    } else {
+      // No feedback found, handle appropriately
+      throw Exception("No feedback record found for user $userId and subject $subjectId");
+    }
+  }
+
+  
 }
 

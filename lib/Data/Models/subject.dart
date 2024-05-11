@@ -1,5 +1,5 @@
 class Subject {
-  final int id;           // Identificador único de la asignatura   
+  int id;           // Identificador único de la asignatura   
   final int universityId;
   final String name;      //Nombre de la asignatura
   final int credits;      // Número de créditos de la asignatura

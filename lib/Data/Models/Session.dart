@@ -1,5 +1,5 @@
 class Session {
-  final int id;           // Identificador único de la sesión
+  int id;           // Identificador único de la sesión
   final DateTime startTime; // Fecha y hora de inicio
   final DateTime endTime;   // Fecha y hora de finalización
 

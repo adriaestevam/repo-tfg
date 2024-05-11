@@ -14,6 +14,6 @@ class AcademiaInitial extends AcademiaState {}
 class displayInformation extends AcademiaState{
   final List<Event> events;
   final List<Evaluation> evaluations;
-
-  displayInformation({required this.events, required this.evaluations});
+  final int feedback;
+  displayInformation({required this.events, required this.evaluations, required this.feedback});
 }

@@ -1,6 +1,6 @@
 class Evaluation {
 
-  final int id; // Identificador único de la evaluación
+  int id; // Identificador único de la evaluación
   final DateTime date;    // Fecha de la evaluación
   final double grade; 
       // Nota o calificación de la evaluación

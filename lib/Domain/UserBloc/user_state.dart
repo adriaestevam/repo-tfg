@@ -14,11 +14,13 @@ class displayInformation extends UserState{
   final User user;
   final University university;
   final List<Subject> subjects;
+  final List<StudyBlock> studyBlocks;
 
   displayInformation({
     required this.user,
     required this.university,
     required this.subjects,
+    required this.studyBlocks,
   });
 
 }

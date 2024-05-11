@@ -1,10 +1,12 @@
 import 'package:bloc/bloc.dart';
 import 'package:collection/collection.dart';
+import 'package:tfg_v1/Data/DataService.dart';
 import 'package:tfg_v1/Data/Models/Evaluation.dart';
 import 'package:tfg_v1/Data/Models/Event.dart';
 import 'package:tfg_v1/Data/Models/Subject.dart';
 import 'package:tfg_v1/Data/Models/User-Subject-Event.dart';
 import 'package:tfg_v1/Data/Repositories/EventRepository.dart';
+import 'package:tfg_v1/Data/Repositories/UserRepository.dart';
 import 'package:tfg_v1/Domain/AcademiaBloc/academia_event.dart';
 import 'package:tfg_v1/Domain/AcademiaBloc/academia_state.dart';
 import 'package:tfg_v1/Domain/CalendarBloc/calendar_bloc.dart';
@@ -17,13 +19,15 @@ class AcademiaBloc extends Bloc<AcademiaEvent, AcademiaState> {
    
     on<uploadAcademicData>((event, emit) async {
       try{
-        print('upload academic data bloc');
+        UserRepository userRepository = UserRepository(DataService());
         Subject subject = event.subject;
 
+        int feedback = await userRepository.getUserCurrentFeedback(subject.id);
         //get events and evaluations from subject and user
         List<Evaluation> evaluations = await eventRepository.uploadEvaluations();
         List<Event> events = await eventRepository.uploadEvents();
         List<UserSubjectEvent> userSubjectEvents = await eventRepository.uploadUserSubjectEvents();
+        
 
         // Print each event's name for debugging
         print('Events data loaded:');
@@ -40,7 +44,7 @@ class AcademiaBloc extends Bloc<AcademiaEvent, AcademiaState> {
      
         List<Evaluation> evaluationsFromSubject = getEvaluationsFromSubject(eventFromSubject, evaluations);
 
-        emit(displayInformation(events: eventFromSubject, evaluations: evaluationsFromSubject));
+        emit(displayInformation(events: eventFromSubject, evaluations: evaluationsFromSubject,feedback: feedback));
 
 
       }catch(error){

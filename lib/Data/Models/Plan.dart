@@ -1,5 +1,5 @@
 class Plan {
-  final int userId;
+  int userId;
   final DateTime initialDate;  // Clave foránea de la asignatura y parte de la clave primaria
    // Clave foránea de la sesión y parte de la clave primaria
 

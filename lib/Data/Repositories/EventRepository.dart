@@ -79,6 +79,13 @@ class EventRepository {
     _dataService.addPlan(eventsFromPlan,sessionsFromPlan,userSubjectEventsFromPlan,planIdentificator);
   }
 
+  saveChangesRetros(Map<int, double> updatedGrades, Map<int, bool> selectedSessions) {
+    _dataService.saveChangesRetros(updatedGrades,selectedSessions);
+  }
+
+
+  
+
 }
 
   

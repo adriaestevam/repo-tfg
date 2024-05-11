@@ -1,7 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:tfg_v1/Data/Models/Subject.dart';
+import 'package:tfg_v1/Domain/CalendarBloc/calendar_bloc.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_event.dart';
 import 'package:tfg_v1/Domain/SubjectBloc/subject_bloc.dart';
 import 'package:tfg_v1/Domain/SubjectBloc/subject_event.dart';
@@ -37,6 +40,10 @@ class _ObjectivesScreenState extends State<ObjectivesScreen> {
     return BlocBuilder<SubjectBloc, SubjectState>(
       builder: (context, state) {
         if(state is displayObjectivesAndPriorities){
+          // Maximum number of items in either list to determine the container height
+          int maxItems = max(state.subjects.length, state.objectivesAndPriorities.length);
+          double containerHeight = maxItems * 60.0; // Assuming each ListTile has an approximate height of 60 pixels
+
           return Scaffold(
             appBar: AppBar(
               backgroundColor: backgroundColor,
@@ -71,16 +78,18 @@ class _ObjectivesScreenState extends State<ObjectivesScreen> {
                       children: [
                         // Container para la lista de aprobados
                         Container(
+                          height: containerHeight, // Set the height dynamically
                           decoration: myBoxDecoration(),
                           width: MediaQuery.of(context).size.width * 0.4,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              SizedBox(height: 5),
                               Text(
                                 'Aprobar:',
                                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               ),
-                              SizedBox(height: 5),
+                              SizedBox(height: 2),
                               ListView.builder(
                                 shrinkWrap: true,
                                 physics: NeverScrollableScrollPhysics(),
@@ -105,16 +114,18 @@ class _ObjectivesScreenState extends State<ObjectivesScreen> {
                         ),
                         // Container para la lista de honor
                         Container(
+                          height: containerHeight, // Set the height dynamically
                           decoration: myBoxDecoration(),
                           width: MediaQuery.of(context).size.width * 0.4,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              SizedBox(height: 5),
                               Text(
                                 'Honour:',
                                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                               ),
-                              SizedBox(height: 5),
+                              SizedBox(height: 2),
                               ListView.builder(
                                 shrinkWrap: true,
                                 physics: NeverScrollableScrollPhysics(),
@@ -224,7 +235,10 @@ class _ObjectivesScreenState extends State<ObjectivesScreen> {
                 // ... otras propiedades como currentIndex, onTap, etc
                 onTap: (index) {
                   switch(index){
-                    case 0: navigatorBloc.add(GoToHomeEvent());
+                    case 0: 
+                    final CalendarBloc calendarBloc = BlocProvider.of<CalendarBloc>(context);
+                    navigatorBloc.add(GoToHomeEvent());
+                    calendarBloc.add(uploadEvents(userWantsPlan: false));
                       break;
                     case 1: navigatorBloc.add(GoToObjectivesEvent());
                       break;

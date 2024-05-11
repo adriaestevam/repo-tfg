@@ -7,15 +7,12 @@ import 'package:tfg_v1/Domain/AcademiaBloc/academia_bloc.dart';
 import 'package:tfg_v1/Domain/CalendarBloc/calendar_bloc.dart';
 import 'package:tfg_v1/Domain/LoginBloc/login_bloc.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_bloc.dart';
-import 'package:tfg_v1/Domain/NavigatorBloc/navigator_event.dart';
 import 'package:tfg_v1/Domain/NavigatorBloc/navigator_state.dart';
 import 'package:tfg_v1/Domain/SignUpBloc/sing_up_bloc.dart';
 import 'package:tfg_v1/Domain/SubjectBloc/subject_bloc.dart';
 import 'package:tfg_v1/Domain/UserBloc/user_bloc.dart';
 import 'package:tfg_v1/UI/Utilities/AppTheme.dart';
-import 'package:tfg_v1/UI/Utilities/Routes.dart';
 import 'package:tfg_v1/UI/Utilities/bottom_nav_bar_state.dart';
-import 'package:tfg_v1/UI/Views/Home/addNewEventScreen.dart';
 import 'package:tfg_v1/UI/Views/Initial%20Configuration/initial_configuration.dart';
 import 'package:tfg_v1/UI/Views/LoginSignup/LoginView.dart';
 import 'package:tfg_v1/UI/Views/LoginSignup/SignupView.dart';
@@ -24,12 +21,14 @@ import 'package:tfg_v1/UI/Views/notification_page.dart';
 import 'package:tfg_v1/UI/Views/objectives_page.dart';
 import 'package:tfg_v1/UI/Views/subjects_page.dart';
 import 'Data/Repositories/AuthRepository.dart';
-import 'Data/DataService.dart';
 import 'Data/Repositories/UserRepository.dart';
-import 'UI/Views/Initial Configuration/addNewSubject.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 
-void main() {
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('es_ES', null); // Initialize date formatting
   runApp(MyApp());
 }
 
@@ -78,6 +77,7 @@ class MyApp extends StatelessWidget {
           BlocProvider<CalendarBloc>(
             create: (context) => CalendarBloc(
               eventRepository: RepositoryProvider.of<EventRepository>(context),
+              userRepository: RepositoryProvider.of<UserRepository>(context),
             ),
           ),
           BlocProvider<AcademiaBloc>(

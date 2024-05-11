@@ -22,3 +22,15 @@ class uploadEventsToUI extends CalendarState {
     required this.sessionList,
   });
 }
+
+class displayRestrosInformation extends CalendarState{
+  final List<Event> events;
+  final List<Session> sessions;
+  final List<Evaluation> evaluations;
+
+  displayRestrosInformation({
+    required this.events,
+    required this.sessions,
+    required this.evaluations,
+  });
+}

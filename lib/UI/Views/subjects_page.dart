@@ -17,7 +17,7 @@ import 'package:tfg_v1/UI/Utilities/AppTheme.dart';
 import 'package:tfg_v1/UI/Utilities/app_colors.dart';
 import 'package:tfg_v1/UI/Views/notification_page.dart';
 import 'package:tfg_v1/UI/Views/objectives_page.dart';
-
+import 'package:avatar_glow/avatar_glow.dart';
 import '../../Domain/NavigatorBloc/navigator_event.dart';
 import '../Utilities/widgets.dart';
 
@@ -128,7 +128,9 @@ class SubjectsScreen extends StatelessWidget {
                 onTap: (index) {
                   switch (index) {
                     case 0:
+                      final CalendarBloc calendarBloc = BlocProvider.of<CalendarBloc>(context);
                       navigatorBloc.add(GoToHomeEvent());
+                      calendarBloc.add(uploadEvents(userWantsPlan: false));
                       break;
                     case 1:
                       navigatorBloc.add(GoToObjectivesEvent());
@@ -241,7 +243,9 @@ class SubjectDetailsPage extends StatelessWidget {
       } else if (state is displayInformation){
         List<Event> events = state.events;
         List<Evaluation> evaluations = state.evaluations;
+        int feedback = state.feedback;
         
+      
         List<Map<String, String>> formulaElements = subject.formula.split(', ')
         .map((e) {
           var parts = e.split(': ');
@@ -275,20 +279,40 @@ class SubjectDetailsPage extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            CircleAvatar(
-                              backgroundColor: Colors.red.withOpacity(0.5),
-                              radius: 30,
-                            ),
+                            if (feedback == 1)
+                              AvatarGlow(
+                                animate: true,
+                                glowColor: Colors.red,
+                                
+                                child: CircleAvatar(
+                                  backgroundColor: Colors.red.withOpacity(0.5),
+                                  radius: 30,
+                                  child: Icon(Icons.error, size: 30, color: Colors.white),
+                                ),
+                              ),
+                            if (feedback == 2)
+                              AvatarGlow(
+                                animate: true,
+                                glowColor: Colors.amber,
+                                
+                                child: CircleAvatar(
+                                  backgroundColor: Colors.amber.withOpacity(0.5),
+                                  radius: 30,
+                                  child: Icon(Icons.warning, size: 30, color: Colors.white),
+                                ),
+                              ),
+                            if (feedback == 3)
+                              AvatarGlow(
+                                animate: true,
+                                glowColor: Colors.green,
+                                
+                                child: CircleAvatar(
+                                  backgroundColor: Colors.green.withOpacity(0.5),
+                                  radius: 30,
+                                  child: Icon(Icons.check, size: 30, color: Colors.white),
+                                ),
+                              ),
                             SizedBox(width: 10),
-                            CircleAvatar(
-                              backgroundColor: Colors.amber.withOpacity(0.5),
-                              radius: 30,
-                            ),
-                            SizedBox(width: 10),
-                            CircleAvatar(
-                              backgroundColor: Colors.green,
-                              radius: 30,
-                            ),
                           ],
                         ),
                         SizedBox(height: 10),
@@ -416,30 +440,29 @@ class SubjectDetailsPage extends StatelessWidget {
                                       ),
                                     ),
                                     TableCell(
-                              verticalAlignment: TableCellVerticalAlignment.middle,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: gradeControllers[element['name']]?.text.isEmpty ?? true ? Text('No Eva') : TextField(
-                                  controller: gradeControllers[element['name']],
-                                  onSubmitted: (value) {
-                                    academiaBloc.add(UpdateEvaluationGradeEvent(name: element['name']!, newGrade: value, subject: subject));
-                                  },
-                                  decoration: InputDecoration(
-                                    border: OutlineInputBorder( // Esquinas no redondeadas
-                                      borderSide: BorderSide.none, // No mostrar borde
-                                    ),
-                                    filled: false, // No fill
-                                    contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10), // Adjusts internal padding to reduce height
-                                    isDense: true, // Further reduces the height
-                                  ),
-                                  keyboardType: TextInputType.number,
-                                  style: TextStyle(
-                                    fontSize: 14, // Adjusts font size if necessary
-                                  ),
-                                ),
-                              ),
-                            )
-
+                                      verticalAlignment: TableCellVerticalAlignment.middle,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: gradeControllers[element['name']]?.text.isEmpty ?? true ? Text('No Eva') : TextField(
+                                          controller: gradeControllers[element['name']],
+                                          onSubmitted: (value) {
+                                            academiaBloc.add(UpdateEvaluationGradeEvent(name: element['name']!, newGrade: value, subject: subject));
+                                          },
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder( // Esquinas no redondeadas
+                                              borderSide: BorderSide.none, // No mostrar borde
+                                            ),
+                                            filled: false, // No fill
+                                            contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 10), // Adjusts internal padding to reduce height
+                                            isDense: true, // Further reduces the height
+                                          ),
+                                          keyboardType: TextInputType.number,
+                                          style: TextStyle(
+                                            fontSize: 14, // Adjusts font size if necessary
+                                          ),
+                                        ),
+                                      ),
+                                    )
                                   ],
                                 ),
                             ],
@@ -490,7 +513,9 @@ Map<String, TextEditingController> getEvaluationsGradeControllers(List<Map<Strin
     if (matchingEvent != null) {
       Evaluation? matchingEvaluation = evaluations.firstWhereOrNull((eval) => eval.id == matchingEvent.id);
       if (matchingEvaluation != null) {
-        controllers[evaluationName] = TextEditingController(text: matchingEvaluation.grade.toString());
+        controllers[evaluationName] = TextEditingController(
+          text: matchingEvaluation.grade == 11 ? '-' : matchingEvaluation.grade.toString()
+        );
       }
     }
   }
